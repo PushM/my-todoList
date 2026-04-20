@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo Sticky Calendar</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <section class="panel board-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Desktop Memo</p>
+            <h1>今日待办</h1>
+          </div>
+          <div class="header-actions">
+            <button id="stickyToggle" class="mode-toggle" type="button">打开桌面便签</button>
+            <p id="todayLabel" class="today-label"></p>
+          </div>
+        </div>
+
+        <form id="taskForm" class="task-form">
+          <input id="taskInput" type="text" maxlength="120" placeholder="输入一个任务，比如：提交日报" />
+          <button type="submit">添加</button>
+        </form>
+
+        <div class="task-section">
+          <div class="section-title">
+            <div>
+              <h2>进行中</h2>
+              <p class="section-caption">按四象限管理，支持跨象限拖动和象限内排序。</p>
+            </div>
+            <span id="pendingCount"></span>
+          </div>
+          <div id="quadrantBoard" class="quadrant-board"></div>
+        </div>
+
+      </section>
+
+      <section class="panel calendar-panel">
+        <div class="calendar-header">
+          <button id="prevMonth" class="nav-btn" type="button">‹</button>
+          <div>
+            <p class="eyebrow">Completion Calendar</p>
+            <h2 id="monthLabel"></h2>
+          </div>
+          <button id="nextMonth" class="nav-btn" type="button">›</button>
+        </div>
+
+        <section class="sync-panel">
+          <div class="sync-panel-header">
+            <div>
+              <p class="eyebrow">Cloud Sync</p>
+              <h3>多端同步</h3>
+            </div>
+            <button id="syncNowButton" class="sync-now-button" type="button">立即同步</button>
+          </div>
+          <div class="sync-grid">
+            <label class="sync-field">
+              <span>服务器地址</span>
+              <input id="serverUrlInput" type="text" placeholder="例如：http://你的公网IP:8787" />
+            </label>
+            <label class="sync-field">
+              <span>同步码</span>
+              <input id="syncKeyInput" type="text" placeholder="电脑和手机填同一个同步码" />
+            </label>
+          </div>
+          <div class="sync-actions">
+            <button id="saveSyncButton" class="save-sync-button" type="button">保存同步设置</button>
+            <span id="syncStatusText" class="sync-status-text">未配置同步</span>
+          </div>
+        </section>
+
+        <div class="weekdays">
+          <span>一</span>
+          <span>二</span>
+          <span>三</span>
+          <span>四</span>
+          <span>五</span>
+          <span>六</span>
+          <span>日</span>
+        </div>
+
+        <div id="calendarGrid" class="calendar-grid"></div>
+
+        <div class="log-panel">
+          <div class="section-title">
+            <h3 id="selectedDateTitle">当天记录</h3>
+            <span id="selectedDateCount"></span>
+          </div>
+          <form id="calendarAddForm" class="calendar-add-form">
+            <input
+              id="calendarAddInput"
+              type="text"
+              maxlength="120"
+              placeholder="在当前日期补录已完成任务，例如：补写周报"
+            />
+            <button type="submit">补录完成</button>
+          </form>
+          <div id="selectedDateLog" class="log-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>

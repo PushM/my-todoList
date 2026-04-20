@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo Sticky Note</title>
+    <link rel="stylesheet" href="./sticky.css" />
+  </head>
+  <body>
+    <div class="sticky-shell">
+      <div class="sticky-window">
+        <header class="sticky-header">
+          <div class="drag-region">
+            <p class="eyebrow">Pinned Memo</p>
+            <h1>桌面便签</h1>
+          </div>
+          <div class="header-buttons">
+            <button id="minimizeBtn" type="button" title="最小化">_</button>
+            <button id="closeBtn" type="button" title="关闭">×</button>
+          </div>
+        </header>
+
+        <div class="sticky-meta">
+          <p id="dateLabel"></p>
+          <span id="taskCount"></span>
+        </div>
+
+        <form id="taskForm" class="task-form">
+          <input id="taskInput" type="text" maxlength="120" placeholder="快速记一件事" />
+          <button type="submit">添加</button>
+        </form>
+
+        <p class="sticky-tip">拖动任务可跨象限切换，也可以在象限内调整顺序。</p>
+        <div id="quadrantBoard" class="quadrant-board"></div>
+      </div>
+    </div>
+    <script src="./sticky.js"></script>
+  </body>
+</html>

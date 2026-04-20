@@ -1,0 +1,10 @@
+﻿{
+  "name": "Todo Mobile",
+  "short_name": "Todo",
+  "start_url": "/mobile/",
+  "scope": "/mobile/",
+  "display": "standalone",
+  "background_color": "#f3e7d7",
+  "theme_color": "#b86b3f",
+  "description": "Todo mobile app with cloud sync"
+}
