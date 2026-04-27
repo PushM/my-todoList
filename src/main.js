@@ -350,6 +350,23 @@ function addTaskToCompletionLog(state, task, completedAt) {
   state.completionLog[dateKey] = items;
 }
 
+function syncTaskTitleInCompletionLog(state, taskId, nextTitle) {
+  for (const dateKey of Object.keys(state.completionLog)) {
+    if (!Array.isArray(state.completionLog[dateKey])) {
+      continue;
+    }
+
+    state.completionLog[dateKey] = state.completionLog[dateKey].map((item) =>
+      item.taskId === taskId
+        ? {
+            ...item,
+            title: nextTitle
+          }
+        : item
+    );
+  }
+}
+
 function markStateUpdated(state) {
   return {
     ...normalizeState(state),
@@ -717,6 +734,20 @@ app.whenReady().then(() => {
     const state = readState();
     reorderPendingTask(state, taskId, targetQuadrantId, targetIndex);
     return saveStateAndBroadcast(state, "task-move");
+  });
+
+  ipcMain.handle("task:updateTitle", (_, taskId, nextTitle) => {
+    const state = readState();
+    const target = state.tasks.find((task) => task.id === taskId);
+    const trimmedTitle = String(nextTitle || "").trim();
+
+    if (!target || !trimmedTitle) {
+      return state;
+    }
+
+    target.title = trimmedTitle;
+    syncTaskTitleInCompletionLog(state, taskId, trimmedTitle);
+    return saveStateAndBroadcast(state, "task-update-title");
   });
 
   ipcMain.handle("task:toggle", (_, taskId, completionDateKey = null) => {

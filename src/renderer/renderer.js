@@ -95,6 +95,27 @@ function formatChineseDate(date) {
   }).format(date);
 }
 
+function formatTime(isoString) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(isoString));
+}
+
+function formatDateTime(isoString) {
+  if (!isoString) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(isoString));
+}
+
 function isValidDateKey(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))) {
     return false;
@@ -221,24 +242,87 @@ function requestDateKey(defaultDateKey, message) {
   });
 }
 
-function formatTime(isoString) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(new Date(isoString));
-}
-
-function formatDateTime(isoString) {
-  if (!isoString) {
-    return "";
+function requestTaskTitle(defaultTitle, message) {
+  if (!document.body) {
+    const input = window.prompt(message, defaultTitle);
+    if (input === null) {
+      return null;
+    }
+    const trimmed = input.trim();
+    return trimmed || null;
   }
 
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(new Date(isoString));
+  return new Promise((resolve) => {
+    const backdrop = document.createElement("div");
+    backdrop.className = "date-modal-backdrop";
+
+    const modal = document.createElement("div");
+    modal.className = "date-modal";
+
+    const title = document.createElement("p");
+    title.className = "date-modal-title";
+    title.textContent = message;
+
+    const input = document.createElement("input");
+    input.className = "date-modal-input";
+    input.type = "text";
+    input.maxLength = 120;
+    input.value = String(defaultTitle || "");
+    input.placeholder = "输入任务内容";
+
+    const actions = document.createElement("div");
+    actions.className = "date-modal-actions";
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.className = "date-modal-button neutral";
+    cancelButton.textContent = "取消";
+
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.className = "date-modal-button primary";
+    confirmButton.textContent = "保存";
+
+    actions.append(cancelButton, confirmButton);
+    modal.append(title, input, actions);
+    backdrop.append(modal);
+
+    const finish = (value) => {
+      document.removeEventListener("keydown", onKeyDown);
+      backdrop.remove();
+      resolve(value);
+    };
+
+    const tryConfirm = () => {
+      const nextTitle = input.value.trim();
+      if (!nextTitle) {
+        window.alert("任务内容不能为空");
+        return;
+      }
+      finish(nextTitle);
+    };
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        finish(null);
+      } else if (event.key === "Enter") {
+        tryConfirm();
+      }
+    };
+
+    cancelButton.addEventListener("click", () => finish(null));
+    confirmButton.addEventListener("click", tryConfirm);
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) {
+        finish(null);
+      }
+    });
+    document.addEventListener("keydown", onKeyDown);
+
+    document.body.append(backdrop);
+    input.focus();
+    input.select();
+  });
 }
 
 function setState(nextState) {
@@ -307,9 +391,10 @@ function createPendingTaskCard(task) {
       <div class="task-card-main">
         <div class="task-meta">
           <div class="task-title">${escapeHtml(task.title)}</div>
-          <div class="task-time">创建于 ${formatTime(task.createdAt)}</div>
+          <div class="task-time">创建于 ${formatDateTime(task.createdAt)}</div>
         </div>
         <div class="task-actions">
+          <button class="task-action edit-date" data-action="edit-task">编辑</button>
           <button class="task-action complete" data-action="toggle">完成并选日期</button>
           <button class="task-action delete" data-action="delete">删除</button>
           <button class="drag-handle" type="button" data-drag-handle title="拖动排序">::</button>
@@ -665,6 +750,17 @@ document.body.addEventListener("click", async (event) => {
 
     if (action === "delete") {
       nextState = await window.todoApi.deleteTask(taskId);
+    } else if (action === "edit-task") {
+      if (!currentTask || currentTask.completed) {
+        return;
+      }
+
+      const nextTitle = await requestTaskTitle(currentTask.title, "编辑进行中的任务");
+      if (!nextTitle || nextTitle === currentTask.title) {
+        return;
+      }
+
+      nextState = await window.todoApi.updateTaskTitle(taskId, nextTitle);
     } else if (action === "edit-date") {
       if (!currentTask?.completedAt) {
         return;

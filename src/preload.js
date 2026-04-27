@@ -3,6 +3,7 @@
 contextBridge.exposeInMainWorld("todoApi", {
   loadState: () => ipcRenderer.invoke("state:load"),
   addTask: (title) => ipcRenderer.invoke("task:add", title),
+  updateTaskTitle: (taskId, title) => ipcRenderer.invoke("task:updateTitle", taskId, title),
   moveTask: (taskId, targetQuadrantId, targetIndex) =>
     ipcRenderer.invoke("task:move", taskId, targetQuadrantId, targetIndex),
   toggleTask: (taskId, completionDateKey) =>
