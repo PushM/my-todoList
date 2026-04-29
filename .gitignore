@@ -3,3 +3,8 @@ server/data/
 dist/
 out/
 *.log
+.tmp/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties

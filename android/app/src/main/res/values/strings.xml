@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">My TodoList</string>
+  <string name="calendar_permission_rationale">允许日历权限后，安卓端才能把已完成任务自动同步到手机日历。</string>
+  <string name="calendar_permission_denied">没有日历权限时，安卓端只能同步待办数据，无法写入系统日历。</string>
+  <string name="calendar_select_title">选择同步到哪个日历</string>
+  <string name="calendar_sync_ready">日历同步已开启</string>
+  <string name="calendar_sync_missing_target">当前设备没有可写入的日历，请先在系统里添加一个日历账户。</string>
+</resources>

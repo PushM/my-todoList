@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Todo Mobile</title>
+    <link rel="manifest" href="/mobile/manifest.json" />
+    <link rel="stylesheet" href="/mobile/styles.css" />
+    <meta name="theme-color" content="#b86b3f" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">Android Sync App</p>
+          <h1>手机待办</h1>
+          <p class="hero-text">随手记任务，完成后自动进日历，和电脑端保持同一份清单。</p>
+        </div>
+        <button id="syncNowButton" class="pill-button" type="button">立即同步</button>
+      </section>
+
+      <section class="stats-strip">
+        <article class="stat-card">
+          <span class="stat-label">待处理</span>
+          <strong id="pendingStat">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">已完成</span>
+          <strong id="completedStat">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">今天记录</span>
+          <strong id="todayStat">0</strong>
+        </article>
+      </section>
+
+      <section class="panel add-panel">
+        <div class="section-head">
+          <h2>今日计划</h2>
+          <span class="mini-chip warm">快速添加</span>
+        </div>
+        <form id="taskForm" class="task-form">
+          <input id="taskInput" type="text" maxlength="120" placeholder="例如：回客户消息" />
+          <button type="submit">添加</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2>进行中</h2>
+            <p class="section-copy">拖到不同象限，顺手排好优先级。</p>
+          </div>
+          <span id="pendingCount"></span>
+        </div>
+        <div id="quadrantBoard" class="quadrant-board"></div>
+      </section>
+
+      <section class="panel calendar-panel">
+        <div class="section-head">
+          <h2 id="monthLabel"></h2>
+          <div class="calendar-nav">
+            <button id="prevMonthButton" type="button">‹</button>
+            <button id="nextMonthButton" type="button">›</button>
+          </div>
+        </div>
+        <div class="weekday-row">
+          <span>一</span>
+          <span>二</span>
+          <span>三</span>
+          <span>四</span>
+          <span>五</span>
+          <span>六</span>
+          <span>日</span>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+        <div class="day-log">
+          <div class="section-head">
+            <h3 id="selectedDateTitle"></h3>
+            <span id="selectedDateCount"></span>
+          </div>
+          <form id="dayAddForm" class="day-add-form">
+            <input
+              id="dayAddInput"
+              type="text"
+              maxlength="120"
+              placeholder="在当前日期补录已完成任务"
+            />
+            <button type="submit">补录</button>
+          </form>
+          <div id="selectedDateLog" class="log-list"></div>
+        </div>
+      </section>
+
+      <section class="panel sync-panel">
+        <div class="section-head">
+          <h2>同步设置</h2>
+          <span class="mini-chip">云端</span>
+        </div>
+        <label>
+          <span>服务器地址</span>
+          <input id="serverUrlInput" type="text" placeholder="留空默认使用当前站点" />
+        </label>
+        <label>
+          <span>同步码</span>
+          <input id="syncKeyInput" type="text" placeholder="和电脑端保持一致" />
+        </label>
+        <button id="saveConfigButton" class="primary-button" type="button">保存并同步</button>
+        <p id="syncStatusText" class="hint-text">未配置同步</p>
+      </section>
+    </main>
+
+    <script src="/mobile/app.js"></script>
+  </body>
+</html>
