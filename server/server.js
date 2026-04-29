@@ -131,6 +131,17 @@ function sendFile(response, filePath) {
   fs.createReadStream(filePath).pipe(response);
 }
 
+function resolveSafePath(baseDir, relativePath) {
+  const resolvedBase = path.resolve(baseDir);
+  const resolvedTarget = path.resolve(resolvedBase, relativePath);
+
+  if (resolvedTarget === resolvedBase || resolvedTarget.startsWith(`${resolvedBase}${path.sep}`)) {
+    return resolvedTarget;
+  }
+
+  return null;
+}
+
 function getSyncKey(request) {
   return String(request.headers["x-sync-key"] || "").trim();
 }
@@ -222,6 +233,12 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (url.pathname === "/favicon.ico") {
+    response.writeHead(204);
+    response.end();
+    return;
+  }
+
   if (url.pathname === "/api/sync") {
     const syncKey = getSyncKey(request);
     if (!syncKey) {
@@ -295,7 +312,25 @@ const server = http.createServer(async (request, response) => {
 
   if (url.pathname.startsWith("/mobile")) {
     const relativePath = url.pathname === "/mobile/" ? "index.html" : url.pathname.replace(/^\/mobile\//, "");
-    sendFile(response, path.join(publicDir, "mobile", relativePath));
+    const filePath = resolveSafePath(path.join(publicDir, "mobile"), relativePath);
+    if (!filePath) {
+      sendJson(response, 404, { error: "not_found" });
+      return;
+    }
+    sendFile(response, filePath);
+    return;
+  }
+
+  if (request.method === "GET") {
+    const relativePath = url.pathname.replace(/^\/+/, "");
+    const filePath = resolveSafePath(publicDir, relativePath);
+
+    if (!filePath) {
+      sendJson(response, 404, { error: "not_found" });
+      return;
+    }
+
+    sendFile(response, filePath);
     return;
   }
 

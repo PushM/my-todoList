@@ -1,22 +1,135 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Todo Sync Server</title>
-    <style>
-      body { font-family: "Segoe UI", sans-serif; margin: 40px; background: #f5efe7; color: #2f261e; }
-      .card { max-width: 720px; padding: 24px; border-radius: 20px; background: #fff9f1; box-shadow: 0 20px 45px rgba(88,52,28,.12); }
-      a { color: #b25d2d; }
-      code { background: #f2e3cf; padding: 2px 6px; border-radius: 8px; }
-    </style>
+    <title>Todo Web</title>
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="card">
-      <h1>Todo Sync Server</h1>
-      <p>服务已启动。手机端入口：<a href="/mobile/">/mobile/</a></p>
-      <p>健康检查：<a href="/api/health">/api/health</a></p>
-      <p>桌面端和手机端请使用同一个 <code>同步码</code> 共享数据。</p>
-    </div>
+    <main class="app-shell">
+      <section class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">Desktop Browser</p>
+          <h1>电脑网页待办</h1>
+          <p class="hero-text">
+            现在不只是手机端可用。电脑浏览器打开这个页面，也能直接管理四象限待办、完成日历和同步设置。
+          </p>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-link" href="/mobile/">切到手机端样式</a>
+          <button id="syncNowButton" class="pill-button" type="button">立即同步</button>
+        </div>
+      </section>
+
+      <div class="stats-strip">
+        <article class="stat-card">
+          <span class="stat-label">进行中</span>
+          <strong id="pendingStat">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">已完成</span>
+          <strong id="completedStat">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">今天记录</span>
+          <strong id="todayStat">0</strong>
+        </article>
+      </div>
+
+      <div class="desktop-layout">
+        <section class="workspace-column">
+          <section class="panel add-panel">
+            <div class="section-head">
+              <div>
+                <h2>新增待办</h2>
+                <p class="section-copy">新任务默认进入“既紧急又重要”，后续可以直接拖到别的象限。</p>
+              </div>
+              <span class="mini-chip warm">键盘回车可快速添加</span>
+            </div>
+            <form id="taskForm" class="task-form">
+              <input id="taskInput" type="text" maxlength="120" placeholder="例如：整理客户反馈" />
+              <button type="submit">添加任务</button>
+            </form>
+          </section>
+
+          <section class="panel board-panel">
+            <div class="section-head">
+              <div>
+                <h2>进行中四象限</h2>
+                <p class="section-copy">支持跨象限拖动，也支持同一象限内拖动排序。</p>
+              </div>
+              <span id="pendingCount" class="mini-chip">0 项</span>
+            </div>
+            <div id="quadrantBoard" class="quadrant-board"></div>
+          </section>
+        </section>
+
+        <section class="sidebar-column">
+          <section class="panel calendar-panel">
+            <div class="section-head">
+              <div>
+                <h2 id="monthLabel"></h2>
+                <p class="section-copy">完成任务后选日期，记录直接写入日历。</p>
+              </div>
+              <div class="calendar-nav">
+                <button id="prevMonthButton" type="button">‹</button>
+                <button id="nextMonthButton" type="button">›</button>
+              </div>
+            </div>
+            <div class="weekday-row">
+              <span>一</span>
+              <span>二</span>
+              <span>三</span>
+              <span>四</span>
+              <span>五</span>
+              <span>六</span>
+              <span>日</span>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+            <div class="day-log">
+              <div class="section-head">
+                <h3 id="selectedDateTitle"></h3>
+                <span id="selectedDateCount" class="mini-chip">0 条</span>
+              </div>
+              <form id="dayAddForm" class="day-add-form">
+                <input
+                  id="dayAddInput"
+                  type="text"
+                  maxlength="120"
+                  placeholder="在当前日期补录一条已完成任务"
+                />
+                <button type="submit">补录完成</button>
+              </form>
+              <div id="selectedDateLog" class="log-list"></div>
+            </div>
+          </section>
+
+          <section class="panel sync-panel">
+            <div class="section-head">
+              <div>
+                <h2>同步设置</h2>
+                <p class="section-copy">和桌面端、手机端填同一个同步码，就能共享同一份任务数据。</p>
+              </div>
+              <span class="mini-chip">云端</span>
+            </div>
+            <div class="sync-grid">
+              <label>
+                <span>服务器地址</span>
+                <input id="serverUrlInput" type="text" placeholder="留空默认使用当前站点" />
+              </label>
+              <label>
+                <span>同步码</span>
+                <input id="syncKeyInput" type="text" placeholder="例如：family-workspace" />
+              </label>
+            </div>
+            <button id="saveConfigButton" class="primary-button" type="button">保存并同步</button>
+            <p id="syncStatusText" class="hint-text">未配置同步</p>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <script src="/app.js"></script>
   </body>
 </html>
