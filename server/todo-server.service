@@ -1,0 +1,17 @@
+[Unit]
+Description=Todo Sync Server
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/todo-server
+ExecStart=/usr/bin/node server/server.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=8787
+
+[Install]
+WantedBy=multi-user.target
