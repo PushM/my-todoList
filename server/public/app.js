@@ -84,7 +84,10 @@ const dragState = {
   placeholder: null,
   ghost: null,
   offsetX: 0,
-  offsetY: 0
+  offsetY: 0,
+  draggingProgress: null,
+  draggingPanel: null,
+  draggingCard: null
 };
 
 const refs = {
@@ -122,7 +125,8 @@ function createDefaultState() {
     tasks: [],
     completionLog: {},
     updatedAt: new Date().toISOString(),
-    projects: []
+    projects: [],
+    panelOrder: ["board", "calendar", "projects"]
   };
 }
 
@@ -132,6 +136,14 @@ function toFiniteNumber(value, fallback) {
 
 function normalizeQuadrantId(value) {
   return QUADRANTS.some((quadrant) => quadrant.id === value) ? value : DEFAULT_QUADRANT_ID;
+}
+
+function normalizeProjectPriority(value) {
+  const PROJECT_PRIORITY_IDS = ["p0", "p1", "p2"];
+  if (PROJECT_PRIORITY_IDS.includes(value)) return value;
+  if (value === "q1") return "p0";
+  if (value === "q2") return "p1";
+  return "p2";
 }
 
 function normalizeTask(task, index) {
@@ -183,7 +195,7 @@ function normalizeProjectTask(ptask, index) {
     startDate: typeof parsed.startDate === "string" && parsed.startDate ? parsed.startDate : "",
     endDate: typeof parsed.endDate === "string" && parsed.endDate ? parsed.endDate : "",
     progress,
-    priority: normalizeQuadrantId(parsed.priority),
+    priority: normalizeProjectPriority(parsed.priority),
     createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
     order: toFiniteNumber(Number(parsed.order), index)
   };
@@ -210,13 +222,24 @@ function normalizeProjects(projects) {
   return (Array.isArray(projects) ? projects : []).map((project, index) => normalizeProject(project, index));
 }
 
+function normalizePanelOrder(order) {
+  const VALID_PANELS = ["board", "calendar", "projects"];
+  if (!Array.isArray(order)) return ["board", "calendar", "projects"];
+  const filtered = order.filter((id) => VALID_PANELS.includes(id));
+  for (const id of VALID_PANELS) {
+    if (!filtered.includes(id)) filtered.push(id);
+  }
+  return filtered;
+}
+
 function normalizeState(value) {
   const parsed = value && typeof value === "object" ? value : {};
   return {
     tasks: normalizeTasks(parsed.tasks),
     completionLog: parsed.completionLog && typeof parsed.completionLog === "object" ? parsed.completionLog : {},
     updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
-    projects: normalizeProjects(parsed.projects)
+    projects: normalizeProjects(parsed.projects),
+    panelOrder: normalizePanelOrder(parsed.panelOrder)
   };
 }
 
@@ -710,7 +733,7 @@ function renderViewVisibility() {
   refs.projectsView.style.display = isProjects ? "" : "none";
 }
 
-const WEB_PRIORITY_LABELS = { q1: "急重", q2: "重要", q3: "紧急", q4: "待定" };
+const WEB_PRIORITY_LABELS = { p0: "P0", p1: "P1", p2: "P2" };
 
 function createProjectTaskRow(ptask) {
   return `
@@ -737,10 +760,9 @@ function createAddProjectTaskForm(projectId) {
       <input type="date" />
       <input type="date" />
       <select>
-        <option value="q1">急重</option>
-        <option value="q2">重要</option>
-        <option value="q3">紧急</option>
-        <option value="q4" selected>待定</option>
+        <option value="p0">P0</option>
+        <option value="p1">P1</option>
+        <option value="p2" selected>P2</option>
       </select>
       <button type="submit">添加任务</button>
     </form>`;
@@ -751,6 +773,7 @@ function createProjectCard(project) {
   return `
     <div class="project-card" data-project-id="${escapeHtml(project.id)}">
       <div class="project-card-header">
+        <span class="project-card-drag-handle" data-card-handle="${escapeHtml(project.id)}" title="拖动排序">⋮⋮</span>
         <span class="project-card-name">${escapeHtml(project.name)}</span>
         <div class="project-card-actions">
           <button class="project-btn-edit" data-action="edit-project" data-project-id="${escapeHtml(project.id)}" type="button">改名</button>
@@ -1123,6 +1146,25 @@ function deleteProject(projectId) {
   runSync("project-delete");
 }
 
+function reorderPanels(orderedIds) {
+  appState.data.panelOrder = normalizePanelOrder(orderedIds);
+  touchState();
+  render();
+  runSync("panel-reorder");
+}
+
+function reorderProjects(orderedIds) {
+  const idSet = new Set(orderedIds);
+  appState.data.projects.forEach((p) => {
+    const idx = orderedIds.indexOf(p.id);
+    p.order = idx >= 0 ? idx : orderedIds.length;
+  });
+  appState.data.projects.sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt));
+  touchState();
+  render();
+  runSync("project-reorder");
+}
+
 function addProjectTask(projectId, taskData) {
   const project = appState.data.projects.find((p) => p.id === projectId);
   if (!project) return;
@@ -1134,7 +1176,7 @@ function addProjectTask(projectId, taskData) {
     startDate: taskData.startDate || "",
     endDate: taskData.endDate || "",
     progress: 0,
-    priority: normalizeQuadrantId(taskData.priority),
+    priority: normalizeProjectPriority(taskData.priority),
     createdAt: new Date().toISOString(),
     order: maxOrder + 1
   };
@@ -1157,7 +1199,7 @@ function updateProjectTask(projectId, taskId, fields) {
     const num = Number(fields.progress);
     ptask.progress = Number.isFinite(num) ? Math.max(0, Math.min(100, num)) : 0;
   }
-  if (fields.priority !== undefined) ptask.priority = normalizeQuadrantId(fields.priority);
+  if (fields.priority !== undefined) ptask.priority = normalizeProjectPriority(fields.priority);
   project.updatedAt = new Date().toISOString();
   touchState();
   render();
@@ -1324,7 +1366,48 @@ refs.taskForm.addEventListener("submit", (event) => {
 });
 
 document.body.addEventListener("pointerdown", (event) => {
+  const panelHandle = event.target.closest("[data-panel-handle]");
+  if (panelHandle) {
+    event.preventDefault();
+    const panel = panelHandle.closest("[data-panel]");
+    if (!panel) return;
+    const panelId = panel.dataset.panel;
+    dragState.draggingPanel = { panelId, panel };
+    panel.classList.add("dragging");
+    return;
+  }
+
+  const cardHandle = event.target.closest("[data-card-handle]");
+  if (cardHandle) {
+    event.preventDefault();
+    const card = cardHandle.closest(".project-card");
+    if (!card) return;
+    const projectId = card.dataset.projectId;
+    dragState.draggingCard = { projectId, card };
+    card.classList.add("dragging");
+    return;
+  }
+
   const handle = event.target.closest("[data-drag-handle]");
+  const progressBar = event.target.closest(".progress-bar");
+
+  if (progressBar && !handle) {
+    event.preventDefault();
+    const row = progressBar.closest(".schedule-row");
+    const card = progressBar.closest(".project-card");
+    if (!row || !card) return;
+    const ptaskId = row.dataset.ptaskId;
+    const projectId = card.dataset.projectId;
+    const rect = progressBar.getBoundingClientRect();
+    const newProgress = Math.round(Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100)));
+    const fill = progressBar.querySelector(".progress-bar-fill");
+    if (fill) fill.style.width = `${newProgress}%`;
+    const label = progressBar.nextElementSibling;
+    if (label) label.textContent = `${newProgress}%`;
+    dragState.draggingProgress = { projectId, taskId: ptaskId, barElement: progressBar, labelElement: label || null };
+    return;
+  }
+
   if (!handle) {
     return;
   }
@@ -1338,6 +1421,61 @@ document.body.addEventListener("pointerdown", (event) => {
 });
 
 window.addEventListener("pointermove", (event) => {
+  if (dragState.draggingPanel) {
+    event.preventDefault();
+    const panels = Array.from(document.querySelectorAll("[data-panel]:not(.dragging)"));
+    for (const p of panels) p.classList.remove("drop-above", "drop-below");
+    if (panels.length === 0) return;
+    let closest = panels[0];
+    let minDist = Infinity;
+    for (const p of panels) {
+      const rect = p.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const dist = Math.abs(event.clientY - midY);
+      if (dist < minDist) { minDist = dist; closest = p; }
+    }
+    const rect = closest.getBoundingClientRect();
+    if (event.clientY < rect.top + rect.height / 2) {
+      closest.classList.add("drop-above");
+    } else {
+      closest.classList.add("drop-below");
+    }
+    return;
+  }
+
+  if (dragState.draggingCard) {
+    event.preventDefault();
+    const cards = Array.from(document.querySelectorAll(".project-card:not(.dragging)"));
+    for (const c of cards) c.classList.remove("drop-above", "drop-below");
+    if (cards.length === 0) return;
+    let closestCard = cards[0];
+    let minDistCard = Infinity;
+    for (const c of cards) {
+      const r = c.getBoundingClientRect();
+      const mid = r.top + r.height / 2;
+      const d = Math.abs(event.clientY - mid);
+      if (d < minDistCard) { minDistCard = d; closestCard = c; }
+    }
+    const cr = closestCard.getBoundingClientRect();
+    if (event.clientY < cr.top + cr.height / 2) {
+      closestCard.classList.add("drop-above");
+    } else {
+      closestCard.classList.add("drop-below");
+    }
+    return;
+  }
+
+  if (dragState.draggingProgress) {
+    event.preventDefault();
+    const { barElement, labelElement } = dragState.draggingProgress;
+    const rect = barElement.getBoundingClientRect();
+    const newProgress = Math.round(Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100)));
+    const fill = barElement.querySelector(".progress-bar-fill");
+    if (fill) fill.style.width = `${newProgress}%`;
+    if (labelElement) labelElement.textContent = `${newProgress}%`;
+    return;
+  }
+
   if (!dragState.taskId) {
     return;
   }
@@ -1348,12 +1486,82 @@ window.addEventListener("pointermove", (event) => {
 });
 
 window.addEventListener("pointerup", () => {
+  if (dragState.draggingPanel) {
+    const { panelId, panel } = dragState.draggingPanel;
+    panel.classList.remove("dragging");
+    const dropAbove = document.querySelector("[data-panel].drop-above");
+    const dropBelow = document.querySelector("[data-panel].drop-below");
+    const allPanels = Array.from(document.querySelectorAll("[data-panel]")).map((p) => p.dataset.panel);
+    let insertIndex = allPanels.length;
+    if (dropAbove) {
+      insertIndex = allPanels.indexOf(dropAbove.dataset.panel);
+      dropAbove.classList.remove("drop-above");
+    } else if (dropBelow) {
+      insertIndex = allPanels.indexOf(dropBelow.dataset.panel) + 1;
+      dropBelow.classList.remove("drop-below");
+    }
+    const newOrder = allPanels.filter((id) => id !== panelId);
+    newOrder.splice(Math.min(insertIndex, newOrder.length), 0, panelId);
+    dragState.draggingPanel = null;
+    reorderPanels(newOrder);
+    return;
+  }
+
+  if (dragState.draggingCard) {
+    const { projectId, card } = dragState.draggingCard;
+    card.classList.remove("dragging");
+    const dropAbove = document.querySelector(".project-card.drop-above");
+    const dropBelow = document.querySelector(".project-card.drop-below");
+    const allCards = Array.from(document.querySelectorAll(".project-card"));
+    const allIds = allCards.map((c) => c.dataset.projectId);
+    let insertIndex = allIds.length;
+    if (dropAbove) {
+      insertIndex = allIds.indexOf(dropAbove.dataset.projectId);
+      dropAbove.classList.remove("drop-above");
+    } else if (dropBelow) {
+      insertIndex = allIds.indexOf(dropBelow.dataset.projectId) + 1;
+      dropBelow.classList.remove("drop-below");
+    }
+    const newOrder = allIds.filter((id) => id !== projectId);
+    newOrder.splice(Math.min(insertIndex, newOrder.length), 0, projectId);
+    dragState.draggingCard = null;
+    reorderProjects(newOrder);
+    return;
+  }
+
+  if (dragState.draggingProgress) {
+    const { projectId, taskId, barElement } = dragState.draggingProgress;
+    const fill = barElement.querySelector(".progress-bar-fill");
+    const progress = fill ? Math.round(parseFloat(fill.style.width) || 0) : 0;
+    dragState.draggingProgress = null;
+    updateProjectTask(projectId, taskId, { progress });
+    return;
+  }
+
   if (dragState.taskId) {
     finalizeTaskDrag();
   }
 });
 
 window.addEventListener("pointercancel", () => {
+  if (dragState.draggingPanel) {
+    dragState.draggingPanel.panel.classList.remove("dragging");
+    dragState.draggingPanel = null;
+    document.querySelectorAll("[data-panel].drop-above, [data-panel].drop-below").forEach((p) => {
+      p.classList.remove("drop-above", "drop-below");
+    });
+  }
+  if (dragState.draggingCard) {
+    dragState.draggingCard.card.classList.remove("dragging");
+    dragState.draggingCard = null;
+    document.querySelectorAll(".project-card.drop-above, .project-card.drop-below").forEach((c) => {
+      c.classList.remove("drop-above", "drop-below");
+    });
+  }
+  if (dragState.draggingProgress) {
+    dragState.draggingProgress = null;
+    render();
+  }
   if (dragState.taskId) {
     cleanupDragState();
   }
@@ -1490,10 +1698,9 @@ refs.projectList.addEventListener("click", async (event) => {
         <label style="display:block;margin-bottom:8px">进度 (0-100) <input id="webEditPtaskProgress" type="number" min="0" max="100" value="${ptask.progress}" class="date-modal-input" style="width:100%" /></label>
         <label style="display:block;margin-bottom:8px">优先级
           <select id="webEditPtaskPriority" class="date-modal-input" style="width:100%">
-            <option value="q1" ${ptask.priority === "q1" ? "selected" : ""}>急重</option>
-            <option value="q2" ${ptask.priority === "q2" ? "selected" : ""}>重要</option>
-            <option value="q3" ${ptask.priority === "q3" ? "selected" : ""}>紧急</option>
-            <option value="q4" ${ptask.priority === "q4" ? "selected" : ""}>待定</option>
+            <option value="p0" ${ptask.priority === "p0" ? "selected" : ""}>P0</option>
+            <option value="p1" ${ptask.priority === "p1" ? "selected" : ""}>P1</option>
+            <option value="p2" ${ptask.priority === "p2" ? "selected" : ""}>P2</option>
           </select>
         </label>
         <div class="date-modal-actions">

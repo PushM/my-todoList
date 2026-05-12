@@ -59,8 +59,9 @@
             </form>
           </section>
 
-          <section class="panel board-panel">
+          <section class="panel board-panel" data-panel="board">
             <div class="section-head">
+              <span class="panel-drag-handle" data-panel-handle="board" title="拖动排序">⋮⋮</span>
               <div>
                 <h2>进行中四象限</h2>
                 <p class="section-copy">支持跨象限拖动，也支持同一象限内拖动排序。</p>
@@ -72,8 +73,9 @@
         </section>
 
         <section class="sidebar-column">
-          <section class="panel calendar-panel">
+          <section class="panel calendar-panel" data-panel="calendar">
             <div class="section-head">
+              <span class="panel-drag-handle" data-panel-handle="calendar" title="拖动排序">⋮⋮</span>
               <div>
                 <h2 id="monthLabel"></h2>
                 <p class="section-copy">完成任务后选日期，记录直接写入日历。</p>
@@ -136,8 +138,9 @@
       </div>
       </div>
 
-      <section id="projectsView" class="panel projects-panel" style="display:none;">
+      <section id="projectsView" class="panel projects-panel" style="display:none;" data-panel="projects">
         <div class="section-head">
+          <span class="panel-drag-handle" data-panel-handle="projects" title="拖动排序">⋮⋮</span>
           <div>
             <h1>项目管理</h1>
             <p class="section-copy">管理长期项目，为每个项目创建任务排期表。</p>

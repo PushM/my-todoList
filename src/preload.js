@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld("todoApi", {
   updateProjectTask: (projectId, taskId, fields) =>
     ipcRenderer.invoke("projectTask:update", projectId, taskId, fields),
   deleteProjectTask: (projectId, taskId) => ipcRenderer.invoke("projectTask:delete", projectId, taskId),
+  reorderPanels: (orderedIds) => ipcRenderer.invoke("panel:reorder", orderedIds),
+  reorderProjects: (orderedIds) => ipcRenderer.invoke("project:reorder", orderedIds),
   getSyncConfig: () => ipcRenderer.invoke("sync:config:get"),
   saveSyncConfig: (payload) => ipcRenderer.invoke("sync:config:save", payload),
   runSync: (reason) => ipcRenderer.invoke("sync:run", reason),

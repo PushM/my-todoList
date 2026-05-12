@@ -621,6 +621,35 @@ input {
 .project-card-name {
   font-size: 16px;
   font-weight: 600;
+  flex: 1;
+}
+
+.project-card-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  cursor: grab;
+  color: rgba(45, 36, 29, 0.25);
+  font-size: 14px;
+  letter-spacing: -2px;
+  user-select: none;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.project-card.dragging {
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+
+.project-card.drop-above {
+  box-shadow: 0 -3px 0 var(--accent);
+}
+
+.project-card.drop-below {
+  box-shadow: 0 3px 0 var(--accent);
 }
 
 .project-card-actions {
@@ -711,12 +740,15 @@ input {
   background: rgba(72, 48, 35, 0.1);
   overflow: hidden;
   margin-bottom: 2px;
+  cursor: ew-resize;
+  user-select: none;
 }
 
 .progress-bar-fill {
   height: 100%;
   border-radius: 999px;
   background: var(--accent);
+  pointer-events: none;
   min-width: 0;
 }
 
@@ -728,10 +760,9 @@ input {
   font-weight: 600;
 }
 
-.priority-tag.q1 { background: #ffe0d4; color: #9b3c2a; }
-.priority-tag.q2 { background: #dcefdc; color: #245d2f; }
-.priority-tag.q3 { background: #fff1c6; color: #7a5d14; }
-.priority-tag.q4 { background: #e6e6e6; color: #555; }
+.priority-tag.p0 { background: #ffe0d4; color: #b22222; }
+.priority-tag.p1 { background: #fff1c6; color: #b8860b; }
+.priority-tag.p2 { background: #e6e6e6; color: #666; }
 
 .add-ptask-form {
   display: grid;
@@ -785,4 +816,37 @@ input {
   .task-actions {
     justify-content: flex-start;
   }
+}
+
+.panel-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  margin-right: 6px;
+  cursor: grab;
+  color: rgba(45, 36, 29, 0.25);
+  font-size: 14px;
+  letter-spacing: -2px;
+  user-select: none;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.panel-drag-handle:active {
+  cursor: grabbing;
+}
+
+.panel.dragging {
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+
+.panel.drop-above {
+  box-shadow: 0 -3px 0 var(--accent), inset 0 0 0 1px var(--line);
+}
+
+.panel.drop-below {
+  box-shadow: 0 3px 0 var(--accent), inset 0 0 0 1px var(--line);
 }

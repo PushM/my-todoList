@@ -665,6 +665,39 @@ input {
   flex: 1;
 }
 
+.project-card-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  cursor: grab;
+  color: rgba(45, 36, 29, 0.25);
+  font-size: 14px;
+  letter-spacing: -2px;
+  user-select: none;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.project-card-drag-handle:hover {
+  color: rgba(45, 36, 29, 0.5);
+  background: rgba(45, 36, 29, 0.04);
+}
+
+.project-card.dragging {
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+
+.project-card.drop-above {
+  box-shadow: 0 -3px 0 var(--accent);
+}
+
+.project-card.drop-below {
+  box-shadow: 0 3px 0 var(--accent);
+}
+
 .project-card-actions {
   display: flex;
   gap: 6px;
@@ -737,13 +770,15 @@ input {
   background: var(--line);
   border-radius: 3px;
   overflow: hidden;
+  cursor: ew-resize;
+  user-select: none;
 }
 
 .progress-bar-fill {
   height: 100%;
   background: var(--accent);
   border-radius: 3px;
-  transition: width 0.3s;
+  pointer-events: none;
 }
 
 .priority-tag {
@@ -754,24 +789,19 @@ input {
   font-weight: 600;
 }
 
-.priority-tag.q1 {
-  background: #fff4eb;
-  color: #b85c2b;
+.priority-tag.p0 {
+  background: #ffe0d4;
+  color: #b22222;
 }
 
-.priority-tag.q2 {
-  background: #f2f5ea;
-  color: #5b7336;
+.priority-tag.p1 {
+  background: #fff1c6;
+  color: #b8860b;
 }
 
-.priority-tag.q3 {
-  background: #fff6f2;
-  color: #9b4f3a;
-}
-
-.priority-tag.q4 {
-  background: #f3f0e8;
-  color: #6b6252;
+.priority-tag.p2 {
+  background: #e6e6e6;
+  color: #666;
 }
 
 .schedule-cell-actions {
@@ -906,4 +936,42 @@ input {
     min-height: 72px;
     padding: 8px 6px;
   }
+}
+
+.panel-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  margin-right: 8px;
+  cursor: grab;
+  color: rgba(45, 36, 29, 0.25);
+  font-size: 14px;
+  letter-spacing: -2px;
+  user-select: none;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.panel-drag-handle:hover {
+  color: rgba(45, 36, 29, 0.5);
+  background: rgba(45, 36, 29, 0.04);
+}
+
+.panel-drag-handle:active {
+  cursor: grabbing;
+}
+
+.panel.dragging {
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+
+.panel.drop-above {
+  box-shadow: 0 -3px 0 var(--accent), inset 0 0 0 1px var(--line);
+}
+
+.panel.drop-below {
+  box-shadow: 0 3px 0 var(--accent), inset 0 0 0 1px var(--line);
 }

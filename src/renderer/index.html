@@ -14,8 +14,9 @@
       </nav>
 
       <div id="todoView">
-      <section class="panel board-panel">
+      <section class="panel board-panel" data-panel="board">
         <div class="panel-header">
+          <span class="panel-drag-handle" data-panel-handle="board" title="拖动排序">⋮⋮</span>
           <div>
             <p class="eyebrow">Desktop Memo</p>
             <h1>今日待办</h1>
@@ -44,8 +45,9 @@
 
       </section>
 
-      <section class="panel calendar-panel">
+      <section class="panel calendar-panel" data-panel="calendar">
         <div class="calendar-header">
+          <span class="panel-drag-handle" data-panel-handle="calendar" title="拖动排序">⋮⋮</span>
           <button id="prevMonth" class="nav-btn" type="button">‹</button>
           <div>
             <p class="eyebrow">Completion Calendar</p>
@@ -109,8 +111,9 @@
       </section>
       </div>
 
-      <section id="projectsView" class="panel projects-panel" style="display:none;">
+      <section id="projectsView" class="panel projects-panel" style="display:none;" data-panel="projects">
         <div class="panel-header">
+          <span class="panel-drag-handle" data-panel-handle="projects" title="拖动排序">⋮⋮</span>
           <div>
             <p class="eyebrow">Project Management</p>
             <h1>项目管理</h1>

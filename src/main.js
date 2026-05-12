@@ -95,12 +95,21 @@ function createDefaultState() {
     tasks: [],
     completionLog: {},
     updatedAt: new Date().toISOString(),
-    projects: []
+    projects: [],
+    panelOrder: ["board", "calendar", "projects"]
   };
 }
 
 function normalizeQuadrantId(value) {
   return QUADRANT_IDS.includes(value) ? value : DEFAULT_QUADRANT_ID;
+}
+
+function normalizeProjectPriority(value) {
+  const PROJECT_PRIORITY_IDS = ["p0", "p1", "p2"];
+  if (PROJECT_PRIORITY_IDS.includes(value)) return value;
+  if (value === "q1") return "p0";
+  if (value === "q2") return "p1";
+  return "p2";
 }
 
 function toFiniteNumber(value, fallback) {
@@ -156,7 +165,7 @@ function normalizeProjectTask(ptask, index) {
     startDate: typeof parsed.startDate === "string" && parsed.startDate ? parsed.startDate : "",
     endDate: typeof parsed.endDate === "string" && parsed.endDate ? parsed.endDate : "",
     progress,
-    priority: normalizeQuadrantId(parsed.priority),
+    priority: normalizeProjectPriority(parsed.priority),
     createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
     order: toFiniteNumber(Number(parsed.order), index)
   };
@@ -183,13 +192,24 @@ function normalizeProjects(projects) {
   return (Array.isArray(projects) ? projects : []).map((project, index) => normalizeProject(project, index));
 }
 
+function normalizePanelOrder(order) {
+  const VALID_PANELS = ["board", "calendar", "projects"];
+  if (!Array.isArray(order)) return ["board", "calendar", "projects"];
+  const filtered = order.filter((id) => VALID_PANELS.includes(id));
+  for (const id of VALID_PANELS) {
+    if (!filtered.includes(id)) filtered.push(id);
+  }
+  return filtered;
+}
+
 function normalizeState(value) {
   const parsed = value && typeof value === "object" ? value : {};
   return {
     tasks: normalizeTasks(parsed.tasks),
     completionLog: parsed.completionLog && typeof parsed.completionLog === "object" ? parsed.completionLog : {},
     updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
-    projects: normalizeProjects(parsed.projects)
+    projects: normalizeProjects(parsed.projects),
+    panelOrder: normalizePanelOrder(parsed.panelOrder)
   };
 }
 
@@ -908,6 +928,29 @@ app.whenReady().then(() => {
     return saveStateAndBroadcast(state, "project-delete");
   });
 
+  ipcMain.handle("panel:reorder", (_, orderedIds) => {
+    if (!Array.isArray(orderedIds)) return readState();
+    const state = readState();
+    state.panelOrder = normalizePanelOrder(orderedIds);
+    return saveStateAndBroadcast(state, "panel-reorder");
+  });
+
+  ipcMain.handle("project:reorder", (_, orderedIds) => {
+    if (!Array.isArray(orderedIds)) return readState();
+    const state = readState();
+    const idSet = new Set(orderedIds);
+    state.projects.forEach((p) => {
+      const idx = orderedIds.indexOf(p.id);
+      if (idx >= 0) p.order = idx;
+    });
+    // Ensure any project not in the list gets a high order
+    const maxOrder = orderedIds.length;
+    state.projects.forEach((p) => {
+      if (!idSet.has(p.id)) p.order = maxOrder;
+    });
+    return saveStateAndBroadcast(state, "project-reorder");
+  });
+
   ipcMain.handle("projectTask:add", (_, projectId, taskData) => {
     const state = readState();
     const project = state.projects.find((p) => p.id === projectId);
@@ -923,7 +966,7 @@ app.whenReady().then(() => {
       startDate: String(data.startDate || ""),
       endDate: String(data.endDate || ""),
       progress: 0,
-      priority: normalizeQuadrantId(data.priority),
+      priority: normalizeProjectPriority(data.priority),
       createdAt: new Date().toISOString(),
       order: maxOrder + 1
     };
@@ -957,7 +1000,7 @@ app.whenReady().then(() => {
       ptask.progress = Number.isFinite(num) ? Math.max(0, Math.min(100, num)) : 0;
     }
     if (fields.priority !== undefined) {
-      ptask.priority = normalizeQuadrantId(fields.priority);
+      ptask.priority = normalizeProjectPriority(fields.priority);
     }
     project.updatedAt = new Date().toISOString();
     return saveStateAndBroadcast(state, "project-task-update");

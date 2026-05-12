@@ -55,7 +55,10 @@ const dragState = {
   placeholder: null,
   ghost: null,
   offsetX: 0,
-  offsetY: 0
+  offsetY: 0,
+  draggingProgress: null,
+  draggingPanel: null,
+  draggingCard: null
 };
 
 const refs = {
@@ -509,15 +512,20 @@ function renderTabBar() {
 
 function renderViewVisibility() {
   const isProjects = state.tab === "projects";
-  refs.todoView.style.display = isProjects ? "none" : "";
-  refs.projectsView.style.display = isProjects ? "" : "none";
+  const boardPanel = document.querySelector("[data-panel='board']");
+  const calendarPanel = document.querySelector("[data-panel='calendar']");
+  const projectsPanel = document.querySelector("[data-panel='projects']");
+  if (boardPanel) boardPanel.style.display = isProjects ? "none" : "";
+  if (calendarPanel) calendarPanel.style.display = isProjects ? "none" : "";
+  if (projectsPanel) projectsPanel.style.display = isProjects ? "" : "none";
+  // #todoView is a wrapper; keep it visible but empty if needed
+  if (refs.todoView) refs.todoView.style.display = isProjects ? "none" : "";
 }
 
 const PRIORITY_LABELS = {
-  q1: "急重",
-  q2: "重要",
-  q3: "紧急",
-  q4: "待定"
+  p0: "P0",
+  p1: "P1",
+  p2: "P2"
 };
 
 function createProjectTaskRow(ptask) {
@@ -547,10 +555,9 @@ function createAddProjectTaskForm(projectId) {
       <input type="date" />
       <input type="date" />
       <select>
-        <option value="q1">急重</option>
-        <option value="q2">重要</option>
-        <option value="q3">紧急</option>
-        <option value="q4" selected>待定</option>
+        <option value="p0">P0</option>
+        <option value="p1">P1</option>
+        <option value="p2" selected>P2</option>
       </select>
       <button type="submit">添加任务</button>
     </form>`;
@@ -561,6 +568,7 @@ function createProjectCard(project) {
   return `
     <div class="project-card" data-project-id="${escapeHtml(project.id)}">
       <div class="project-card-header">
+        <span class="project-card-drag-handle" data-card-handle="${escapeHtml(project.id)}" title="拖动排序">⋮⋮</span>
         <span class="project-card-name">${escapeHtml(project.name)}</span>
         <div class="project-card-actions">
           <button class="project-btn-edit" data-action="edit-project" data-project-id="${escapeHtml(project.id)}" type="button">改名</button>
@@ -591,8 +599,21 @@ function renderProjectList() {
   refs.projectList.innerHTML = projects.map(createProjectCard).join("");
 }
 
+function renderPanelOrder() {
+  const order = state.data.panelOrder || ["board", "calendar", "projects"];
+  const appShell = document.querySelector(".app-shell");
+  const tabBar = appShell.querySelector(".tab-bar");
+  for (const panelId of order) {
+    const panel = appShell.querySelector(`[data-panel="${panelId}"]`);
+    if (panel) {
+      appShell.insertBefore(panel, tabBar.nextSibling);
+    }
+  }
+}
+
 function render() {
   refs.todayLabel.textContent = formatChineseDate(new Date());
+  renderPanelOrder();
   renderTabBar();
   renderViewVisibility();
   if (state.tab === "projects") {
@@ -802,7 +823,48 @@ refs.syncNowButton.addEventListener("click", async () => {
 });
 
 document.body.addEventListener("pointerdown", (event) => {
+  const panelHandle = event.target.closest("[data-panel-handle]");
+  if (panelHandle) {
+    event.preventDefault();
+    const panel = panelHandle.closest("[data-panel]");
+    if (!panel) return;
+    const panelId = panel.dataset.panel;
+    dragState.draggingPanel = { panelId, panel, startY: event.clientY };
+    panel.classList.add("dragging");
+    return;
+  }
+
+  const cardHandle = event.target.closest("[data-card-handle]");
+  if (cardHandle) {
+    event.preventDefault();
+    const card = cardHandle.closest(".project-card");
+    if (!card) return;
+    const projectId = card.dataset.projectId;
+    dragState.draggingCard = { projectId, card };
+    card.classList.add("dragging");
+    return;
+  }
+
   const handle = event.target.closest("[data-drag-handle]");
+  const progressBar = event.target.closest(".progress-bar");
+
+  if (progressBar && !handle) {
+    event.preventDefault();
+    const row = progressBar.closest(".schedule-row");
+    const card = progressBar.closest(".project-card");
+    if (!row || !card) return;
+    const ptaskId = row.dataset.ptaskId;
+    const projectId = card.dataset.projectId;
+    const rect = progressBar.getBoundingClientRect();
+    const newProgress = Math.round(Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100)));
+    const fill = progressBar.querySelector(".progress-bar-fill");
+    if (fill) fill.style.width = `${newProgress}%`;
+    const label = progressBar.nextElementSibling;
+    if (label) label.textContent = `${newProgress}%`;
+    dragState.draggingProgress = { projectId, taskId: ptaskId, barElement: progressBar, labelElement: label || null };
+    return;
+  }
+
   if (!handle) {
     return;
   }
@@ -816,6 +878,62 @@ document.body.addEventListener("pointerdown", (event) => {
 });
 
 window.addEventListener("pointermove", (event) => {
+  if (dragState.draggingPanel) {
+    event.preventDefault();
+    const panels = Array.from(document.querySelectorAll("[data-panel]:not(.dragging)"));
+    for (const p of panels) p.classList.remove("drop-above", "drop-below");
+    if (panels.length === 0) return;
+    let closest = panels[0];
+    let minDist = Infinity;
+    for (const p of panels) {
+      const rect = p.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const dist = Math.abs(event.clientY - midY);
+      if (dist < minDist) { minDist = dist; closest = p; }
+    }
+    const rect = closest.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    if (event.clientY < midY) {
+      closest.classList.add("drop-above");
+    } else {
+      closest.classList.add("drop-below");
+    }
+    return;
+  }
+
+  if (dragState.draggingCard) {
+    event.preventDefault();
+    const cards = Array.from(document.querySelectorAll(".project-card:not(.dragging)"));
+    for (const c of cards) c.classList.remove("drop-above", "drop-below");
+    if (cards.length === 0) return;
+    let closestCard = cards[0];
+    let minDistCard = Infinity;
+    for (const c of cards) {
+      const rect = c.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const dist = Math.abs(event.clientY - midY);
+      if (dist < minDistCard) { minDistCard = dist; closestCard = c; }
+    }
+    const cardRect = closestCard.getBoundingClientRect();
+    if (event.clientY < cardRect.top + cardRect.height / 2) {
+      closestCard.classList.add("drop-above");
+    } else {
+      closestCard.classList.add("drop-below");
+    }
+    return;
+  }
+
+  if (dragState.draggingProgress) {
+    event.preventDefault();
+    const { barElement, labelElement } = dragState.draggingProgress;
+    const rect = barElement.getBoundingClientRect();
+    const newProgress = Math.round(Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100)));
+    const fill = barElement.querySelector(".progress-bar-fill");
+    if (fill) fill.style.width = `${newProgress}%`;
+    if (labelElement) labelElement.textContent = `${newProgress}%`;
+    return;
+  }
+
   if (!dragState.taskId) {
     return;
   }
@@ -826,6 +944,76 @@ window.addEventListener("pointermove", (event) => {
 });
 
 window.addEventListener("pointerup", async () => {
+  if (dragState.draggingPanel) {
+    const { panelId } = dragState.draggingPanel;
+    const panel = dragState.draggingPanel.panel;
+    panel.classList.remove("dragging");
+    // Determine new order
+    const dropAbove = document.querySelector("[data-panel].drop-above");
+    const dropBelow = document.querySelector("[data-panel].drop-below");
+    const allPanels = Array.from(document.querySelectorAll("[data-panel]")).map((p) => p.dataset.panel);
+    let insertIndex = allPanels.length;
+    if (dropAbove) {
+      insertIndex = allPanels.indexOf(dropAbove.dataset.panel);
+      dropAbove.classList.remove("drop-above");
+    } else if (dropBelow) {
+      insertIndex = allPanels.indexOf(dropBelow.dataset.panel) + 1;
+      dropBelow.classList.remove("drop-below");
+    }
+    // Build new order
+    const newOrder = allPanels.filter((id) => id !== panelId);
+    newOrder.splice(Math.min(insertIndex, newOrder.length), 0, panelId);
+    dragState.draggingPanel = null;
+    try {
+      const nextState = await window.todoApi.reorderPanels(newOrder);
+      setState(nextState);
+    } catch (error) {
+      render();
+    }
+    return;
+  }
+
+  if (dragState.draggingCard) {
+    const { projectId, card } = dragState.draggingCard;
+    card.classList.remove("dragging");
+    const dropAbove = document.querySelector(".project-card.drop-above");
+    const dropBelow = document.querySelector(".project-card.drop-below");
+    const allCards = Array.from(document.querySelectorAll(".project-card"));
+    const allIds = allCards.map((c) => c.dataset.projectId);
+    let insertIndex = allIds.length;
+    if (dropAbove) {
+      insertIndex = allIds.indexOf(dropAbove.dataset.projectId);
+      dropAbove.classList.remove("drop-above");
+    } else if (dropBelow) {
+      insertIndex = allIds.indexOf(dropBelow.dataset.projectId) + 1;
+      dropBelow.classList.remove("drop-below");
+    }
+    const newOrder = allIds.filter((id) => id !== projectId);
+    newOrder.splice(Math.min(insertIndex, newOrder.length), 0, projectId);
+    dragState.draggingCard = null;
+    try {
+      const nextState = await window.todoApi.reorderProjects(newOrder);
+      setState(nextState);
+    } catch (error) {
+      render();
+    }
+    return;
+  }
+
+  if (dragState.draggingProgress) {
+    const { projectId, taskId, barElement } = dragState.draggingProgress;
+    const fill = barElement.querySelector(".progress-bar-fill");
+    const progress = fill ? Math.round(parseFloat(fill.style.width) || 0) : 0;
+    dragState.draggingProgress = null;
+    try {
+      const nextState = await window.todoApi.updateProjectTask(projectId, taskId, { progress });
+      setState(nextState);
+    } catch (error) {
+      render();
+    }
+    return;
+  }
+
   if (!dragState.taskId) {
     return;
   }
@@ -834,6 +1022,25 @@ window.addEventListener("pointerup", async () => {
 });
 
 window.addEventListener("pointercancel", () => {
+  if (dragState.draggingPanel) {
+    const panel = dragState.draggingPanel.panel;
+    panel.classList.remove("dragging");
+    dragState.draggingPanel = null;
+    document.querySelectorAll("[data-panel].drop-above, [data-panel].drop-below").forEach((p) => {
+      p.classList.remove("drop-above", "drop-below");
+    });
+  }
+  if (dragState.draggingCard) {
+    dragState.draggingCard.card.classList.remove("dragging");
+    dragState.draggingCard = null;
+    document.querySelectorAll(".project-card.drop-above, .project-card.drop-below").forEach((c) => {
+      c.classList.remove("drop-above", "drop-below");
+    });
+  }
+  if (dragState.draggingProgress) {
+    dragState.draggingProgress = null;
+    render();
+  }
   if (dragState.taskId) {
     cleanupDragState();
   }
@@ -1022,10 +1229,9 @@ refs.projectList.addEventListener("click", async (event) => {
         <label style="display:block;margin-bottom:8px">进度 (0-100) <input id="editPtaskProgress" type="number" min="0" max="100" value="${ptask.progress}" style="width:100%;border:none;background:#fffdf9;border-radius:10px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
         <label style="display:block;margin-bottom:8px">优先级
           <select id="editPtaskPriority" style="width:100%;border:none;background:#fffdf9;border-radius:10px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)">
-            <option value="q1" ${ptask.priority === "q1" ? "selected" : ""}>急重</option>
-            <option value="q2" ${ptask.priority === "q2" ? "selected" : ""}>重要</option>
-            <option value="q3" ${ptask.priority === "q3" ? "selected" : ""}>紧急</option>
-            <option value="q4" ${ptask.priority === "q4" ? "selected" : ""}>待定</option>
+            <option value="p0" ${ptask.priority === "p0" ? "selected" : ""}>P0</option>
+            <option value="p1" ${ptask.priority === "p1" ? "selected" : ""}>P1</option>
+            <option value="p2" ${ptask.priority === "p2" ? "selected" : ""}>P2</option>
           </select>
         </label>
         <div class="date-modal-actions">

@@ -150,6 +150,14 @@ function normalizeQuadrantId(value) {
   return QUADRANT_IDS.includes(value) ? value : DEFAULT_QUADRANT_ID;
 }
 
+function normalizeProjectPriority(value) {
+  const PROJECT_PRIORITY_IDS = ["p0", "p1", "p2"];
+  if (PROJECT_PRIORITY_IDS.includes(value)) return value;
+  if (value === "q1") return "p0";
+  if (value === "q2") return "p1";
+  return "p2";
+}
+
 function normalizeTask(task, index) {
   const parsed = task && typeof task === "object" ? task : {};
   return {
@@ -199,7 +207,7 @@ function normalizeProjectTask(ptask, index) {
     startDate: typeof parsed.startDate === "string" && parsed.startDate ? parsed.startDate : "",
     endDate: typeof parsed.endDate === "string" && parsed.endDate ? parsed.endDate : "",
     progress,
-    priority: normalizeQuadrantId(parsed.priority),
+    priority: normalizeProjectPriority(parsed.priority),
     createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
     order: Number.isFinite(Number(parsed.order)) ? Number(parsed.order) : index
   };
@@ -226,13 +234,24 @@ function normalizeProjects(projects) {
   return (Array.isArray(projects) ? projects : []).map((project, index) => normalizeProject(project, index));
 }
 
+function normalizePanelOrder(order) {
+  const VALID_PANELS = ["board", "calendar", "projects"];
+  if (!Array.isArray(order)) return ["board", "calendar", "projects"];
+  const filtered = order.filter((id) => VALID_PANELS.includes(id));
+  for (const id of VALID_PANELS) {
+    if (!filtered.includes(id)) filtered.push(id);
+  }
+  return filtered;
+}
+
 function normalizeState(value) {
   const parsed = value && typeof value === "object" ? value : {};
   return {
     tasks: normalizeTasks(parsed.tasks),
     completionLog: parsed.completionLog && typeof parsed.completionLog === "object" ? parsed.completionLog : {},
     updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
-    projects: normalizeProjects(parsed.projects)
+    projects: normalizeProjects(parsed.projects),
+    panelOrder: normalizePanelOrder(parsed.panelOrder)
   };
 }
 
