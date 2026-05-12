@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "name": "The Sharp Page",
+  "created": "2026-05-13",
+  "register": "product",
+
+  "colorMeta": {
+    "strategy": "restrained",
+    "accent": {
+      "name": "Slate Blue",
+      "hex": "#5b7f95",
+      "oklch": "oklch(0.58 0.065 240)",
+      "ramp": {
+        "50": "#f4f7f9",
+        "100": "#e4ecf1",
+        "200": "#c4d4de",
+        "300": "#9bb8c7",
+        "400": "#7ba0b2",
+        "500": "#5b7f95",
+        "600": "#4a6b7e",
+        "700": "#3d5d6e",
+        "800": "#314c5b",
+        "900": "#253b47"
+      }
+    },
+    "neutral": {
+      "page": { "hex": "#f7f5f2", "description": "Root background, cool off-white" },
+      "panel": { "hex": "#fdfdfc", "description": "Card and panel surfaces, brighter than page" },
+      "line": { "hex": "#e5e2df", "description": "1px borders and dividers" },
+      "ink": { "hex": "#1c1c1c", "description": "Primary text, near-black" },
+      "muted": { "hex": "#8c8c8c", "description": "Secondary text, placeholders" }
+    },
+    "semantic": {
+      "success": { "hex": "#7a9e7e", "description": "Completion, done states" },
+      "warning": { "hex": "#c9a96e", "description": "Due dates, approaching deadlines" },
+      "danger": { "hex": "#c47e6e", "description": "Delete, overdue" }
+    }
+  },
+
+  "typographyMeta": {
+    "stack": "'PingFang SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif",
+    "roles": {
+      "display": { "weight": 300, "size": "34px", "lineHeight": 1.1, "letterSpacing": "-0.03em", "use": "Page titles, once per view" },
+      "headline": { "weight": 700, "size": "24px", "lineHeight": 1.2, "letterSpacing": "-0.02em", "use": "Section headers, month labels" },
+      "title": { "weight": 600, "size": "18px", "lineHeight": 1.3, "letterSpacing": "-0.01em", "use": "Card titles, project names" },
+      "body": { "weight": 400, "size": "14px", "lineHeight": 1.6, "letterSpacing": "normal", "use": "All running text, task titles" },
+      "label": { "weight": 500, "size": "11px", "lineHeight": 1.4, "letterSpacing": "0.02em", "use": "Quadrant labels, priority tags" }
+    },
+    "maxLineLength": "65ch"
+  },
+
+  "shadows": {
+    "ambient": {
+      "value": "0 8px 24px rgba(0, 0, 0, 0.08)",
+      "use": "Card hover, dropdown menus, drag previews"
+    },
+    "modal": {
+      "value": "0 20px 48px rgba(0, 0, 0, 0.14)",
+      "use": "Dialog backdrops and modal surfaces only"
+    },
+    "insetLine": {
+      "value": "inset 0 0 0 1px var(--line)",
+      "use": "Default border surrogate, 1px inner stroke"
+    }
+  },
+
+  "rounded": {
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "full": "999px"
+  },
+
+  "spacing": {
+    "xs": "6px",
+    "sm": "12px",
+    "md": "20px",
+    "lg": "32px",
+    "xl": "48px"
+  },
+
+  "motion": {
+    "defaultDuration": "150ms",
+    "defaultEasing": "ease-out",
+    "prefersReducedMotion": true
+  },
+
+  "breakpoints": {
+    "desktopWide": "1180px",
+    "desktop": "980px",
+    "tablet": "820px",
+    "mobile": "560px"
+  },
+
+  "components": {
+    "buttonPrimary": {
+      "css": "background: var(--accent); color: #fff; border-radius: 8px; padding: 8px 20px; font-size: 11px; font-weight: 500; letter-spacing: 0.02em; border: none; cursor: pointer; transition: background 150ms ease-out;",
+      "hover": "background: var(--accent-deep);",
+      "html": "<button class=\"btn-primary\">Label</button>"
+    },
+    "buttonSecondary": {
+      "css": "background: transparent; color: var(--ink); border-radius: 8px; padding: 8px 20px; font-size: 14px; box-shadow: inset 0 0 0 1px var(--line); border: none; cursor: pointer;",
+      "html": "<button class=\"btn-secondary\">Label</button>"
+    },
+    "card": {
+      "css": "background: var(--panel); border-radius: 12px; padding: 24px; box-shadow: none;",
+      "hover": "box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);",
+      "html": "<div class=\"card\">...</div>"
+    },
+    "input": {
+      "css": "background: var(--page); color: var(--ink); border-radius: 8px; padding: 10px 14px; font-size: 14px; box-shadow: inset 0 0 0 1px var(--line); border: none; outline: none;",
+      "focus": "box-shadow: inset 0 0 0 1px var(--accent);",
+      "html": "<input class=\"input\" placeholder=\"Placeholder\" />"
+    },
+    "tabs": {
+      "css": "display: flex; gap: 8px;",
+      "tabButton": "border-radius: 999px; padding: 10px 24px; font-size: 14px; font-weight: 600; background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); border: none; cursor: pointer; transition: all 180ms ease-out;",
+      "tabButtonActive": "background: var(--accent); color: #fff; box-shadow: none;",
+      "html": "<button class=\"tab active\">Tab</button>"
+    },
+    "chip": {
+      "css": "border-radius: 999px; padding: 6px 12px; font-size: 12px;",
+      "html": "<span class=\"chip\">Tag</span>"
+    },
+    "progressBar": {
+      "css": "height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; cursor: ew-resize; user-select: none;",
+      "fill": "height: 100%; background: var(--accent); border-radius: 3px; pointer-events: none;",
+      "html": "<div class=\"progress-bar\"><div class=\"progress-bar-fill\" style=\"width:60%\"></div></div>"
+    },
+    "dragHandle": {
+      "css": "display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 24px; cursor: grab; color: var(--muted); font-size: 14px; user-select: none; border-radius: 4px; opacity: 0.3;",
+      "hover": "opacity: 0.6; background: rgba(0,0,0,0.03);",
+      "html": "<span class=\"drag-handle\">⋮⋮</span>"
+    }
+  },
+
+  "namedRules": {
+    "oneAccent": "The accent color appears on at most 10% of any screen. A button, a selected tab, a checked box.",
+    "noPureWhite": "Every light surface is tinted toward the brand temperature. Pure #ffffff and #000000 are prohibited.",
+    "ghostBorder": "Borders are 1px solid, in neutral-line. Color emphasis comes from background tints, not side borders.",
+    "weightOnly": "Hierarchy is created through font weight and size alone. Never through color alone on the same size.",
+    "flatByDefault": "Surfaces are flat at rest. Shadows appear only as a response to state (hover, elevation, focus, drag).",
+    "onePxMaximum": "No border or outline exceeds 1px. Grouping and separation come from space and background tonal shifts."
+  },
+
+  "narrative": {
+    "creativeNorthStar": "The Sharp Page",
+    "scene": "A single sheet of premium paper under even light. The interface recedes until only the task remains.",
+    "aesthetic": "Precision without coldness. Flat surfaces, cool off-white background with barely perceptible warmth. One accent color signals action. Typography does the heavy lifting through weight contrast.",
+    "keyCharacteristics": [
+      "Flat surfaces with minimal elevation; shadows appear only on hover or drag",
+      "One accent color used on less than 10% of any given screen",
+      "Typographic hierarchy through weight contrast (300 / 400 / 600 / 700)",
+      "No dividers; space alone separates sections",
+      "Cool off-white background tinted just enough to not read as pure white"
+    ]
+  },
+
+  "cssVariables": {
+    "electron": {
+      "comment": "Replace current warm paper tokens with these",
+      "vars": {
+        "--page": "#f7f5f2",
+        "--panel": "#fdfdfc",
+        "--line": "#e5e2df",
+        "--ink": "#1c1c1c",
+        "--muted": "#8c8c8c",
+        "--accent": "#5b7f95",
+        "--accent-deep": "#3d5d6e",
+        "--accent-soft": "#e4ecf1",
+        "--success": "#7a9e7e",
+        "--warning": "#c9a96e",
+        "--danger": "#c47e6e",
+        "--shadow-ambient": "0 8px 24px rgba(0, 0, 0, 0.08)",
+        "--shadow-modal": "0 20px 48px rgba(0, 0, 0, 0.14)",
+        "--radius-sm": "8px",
+        "--radius-md": "12px",
+        "--radius-lg": "16px",
+        "--radius-full": "999px"
+      }
+    }
+  }
+}

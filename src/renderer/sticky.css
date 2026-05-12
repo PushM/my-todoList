@@ -1,10 +1,18 @@
 :root {
-  --note: #fff6c8;
-  --ink: #3a2e10;
-  --line: rgba(82, 63, 10, 0.15);
-  --done: #dcefdc;
-  --delete: #f6d7cf;
-  font-family: "Microsoft YaHei UI", "PingFang SC", sans-serif;
+  --page: #f7f5f2;
+  --panel: #fdfdfc;
+  --line: #e5e2df;
+  --ink: #1c1c1c;
+  --muted: #8c8c8c;
+  --accent: #5b7f95;
+  --accent-deep: #3d5d6e;
+  --accent-soft: #e4ecf1;
+  --success: #7a9e7e;
+  --danger: #c47e6e;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  font-family: 'PingFang SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -27,10 +35,10 @@ body.dragging-active {
 
 .sticky-window {
   min-height: calc(100vh - 20px);
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 248, 214, 0.96), rgba(255, 240, 170, 0.96));
-  box-shadow: 0 14px 30px rgba(88, 66, 7, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--line);
   padding: 12px;
 }
 
@@ -50,9 +58,10 @@ body.dragging-active {
 .eyebrow {
   margin: 0 0 2px;
   font-size: 10px;
-  letter-spacing: 0.16em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: rgba(58, 46, 16, 0.62);
+  color: var(--muted);
 }
 
 h1,
@@ -63,6 +72,7 @@ strong {
 
 h1 {
   font-size: 20px;
+  font-weight: 600;
 }
 
 .header-buttons {
@@ -83,19 +93,20 @@ h1 {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: rgba(255, 251, 232, 0.9);
+  background: transparent;
   color: var(--ink);
   font-size: 15px;
   line-height: 1;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .sticky-meta {
   margin: 10px 0 12px;
   padding: 8px 10px;
-  border-radius: 14px;
-  background: rgba(255, 250, 231, 0.68);
+  border-radius: var(--radius-sm);
+  background: var(--page);
   font-size: 11px;
-  color: rgba(58, 46, 16, 0.76);
+  color: var(--muted);
 }
 
 .task-form {
@@ -109,25 +120,27 @@ h1 {
   min-width: 0;
   border: none;
   outline: none;
-  border-radius: 12px;
-  padding: 10px 12px;
-  background: rgba(255, 252, 238, 0.95);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  background: var(--page);
   box-shadow: inset 0 0 0 1px var(--line);
   font-size: 12px;
 }
 
 .task-form button {
   padding: 0 12px;
-  border-radius: 12px;
-  background: #6d8d38;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
   color: #fff;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .sticky-tip {
   margin-bottom: 10px;
   font-size: 11px;
-  color: rgba(58, 46, 16, 0.62);
+  color: var(--muted);
   line-height: 1.4;
 }
 
@@ -138,25 +151,24 @@ h1 {
 }
 
 .quadrant-column {
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   padding: 10px;
-  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .quadrant-column.urgent-important {
-  background: rgba(255, 245, 230, 0.72);
+  background: #f5e8e4;
 }
 
 .quadrant-column.important {
-  background: rgba(249, 242, 217, 0.72);
+  background: #f1efe4;
 }
 
 .quadrant-column.urgent {
-  background: rgba(252, 240, 234, 0.72);
+  background: #f2e9e6;
 }
 
 .quadrant-column.backlog {
-  background: rgba(244, 242, 231, 0.72);
+  background: #eeede9;
 }
 
 .quadrant-header strong {
@@ -166,7 +178,7 @@ h1 {
 
 .quadrant-header span {
   font-size: 10px;
-  color: rgba(58, 46, 16, 0.62);
+  color: var(--muted);
 }
 
 .quadrant-list {
@@ -181,8 +193,8 @@ h1 {
 .task-placeholder,
 .drag-ghost {
   padding: 10px;
-  border-radius: 14px;
-  background: rgba(255, 251, 237, 0.9);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
@@ -200,7 +212,7 @@ h1 {
 .quadrant-empty {
   margin-top: 3px;
   font-size: 10px;
-  color: rgba(58, 46, 16, 0.62);
+  color: var(--muted);
 }
 
 .task-actions {
@@ -212,25 +224,29 @@ h1 {
 .task-action,
 .drag-handle {
   padding: 6px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
 }
 
 .task-action.complete {
-  background: var(--done);
-  color: #245d2f;
+  background: var(--success);
+  color: #fff;
 }
 
 .task-action.delete {
-  background: var(--delete);
-  color: #8c3a32;
+  background: var(--danger);
+  color: #fff;
 }
 
 .drag-handle {
   min-width: 30px;
-  background: rgba(58, 46, 16, 0.08);
-  color: rgba(58, 46, 16, 0.76);
+  background: transparent;
+  color: var(--muted);
   touch-action: none;
+}
+
+.drag-handle:hover {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .pending-card.drag-source {
@@ -242,11 +258,12 @@ h1 {
   z-index: 999;
   pointer-events: none;
   margin: 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .task-placeholder {
-  border: 2px dashed rgba(88, 66, 7, 0.28);
-  background: rgba(255, 252, 238, 0.72);
+  border: 2px dashed var(--accent);
+  background: var(--accent-soft);
 }
 
 .quadrant-empty {
@@ -257,7 +274,7 @@ h1 {
 .date-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(36, 25, 18, 0.28);
+  background: rgba(0, 0, 0, 0.2);
   display: grid;
   place-items: center;
   z-index: 1200;
@@ -265,11 +282,10 @@ h1 {
 
 .date-modal {
   width: min(300px, calc(100vw - 24px));
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 14px;
-  background: #fffaf3;
-  box-shadow: 0 16px 34px rgba(52, 31, 20, 0.22);
-  border: 1px solid rgba(70, 43, 22, 0.12);
+  background: var(--panel);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.14);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -284,9 +300,9 @@ h1 {
 .date-modal-input {
   border: none;
   outline: none;
-  border-radius: 12px;
-  padding: 10px 12px;
-  background: #fffdf9;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  background: var(--page);
   font-size: 13px;
   box-shadow: inset 0 0 0 1px var(--line);
 }
@@ -300,17 +316,20 @@ h1 {
 .date-modal-button {
   border: none;
   cursor: pointer;
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 12px;
+  border-radius: var(--radius-sm);
+  padding: 8px 20px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .date-modal-button.neutral {
-  background: #efe6da;
-  color: #46362a;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .date-modal-button.primary {
-  background: #6d8d38;
+  background: var(--accent);
   color: #fff;
 }
