@@ -61,12 +61,12 @@ function readStorageWithBackup(primaryKey, backupKey) {
   try {
     return JSON.parse(backupValue);
   } catch (error) {
-    return setSyncMessage(getFriendlySyncErrorMessage(serverUrl, error));
     return null;
   }
 }
 
 const appState = {
+  tab: "todo",
   data: loadState(),
   config: loadConfig(),
   currentMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -108,7 +108,13 @@ const refs = {
   selectedDateCount: document.getElementById("selectedDateCount"),
   selectedDateLog: document.getElementById("selectedDateLog"),
   dayAddForm: document.getElementById("dayAddForm"),
-  dayAddInput: document.getElementById("dayAddInput")
+  dayAddInput: document.getElementById("dayAddInput"),
+  tabTodo: document.getElementById("tabTodo"),
+  tabProjects: document.getElementById("tabProjects"),
+  todoView: document.getElementById("todoView"),
+  projectsView: document.getElementById("projectsView"),
+  projectList: document.getElementById("projectList"),
+  addProjectButton: document.getElementById("addProjectButton")
 };
 
 function getNativeTodoBridge() {
@@ -133,7 +139,7 @@ function applyNativeBootstrapConfig() {
 
     const parsed = JSON.parse(payload);
     appState.config = {
-      serverUrl: String(parsed.serverUrl || appState.config.serverUrl || "").trim(),
+      serverUrl: normalizeServerUrl(parsed.serverUrl || appState.config.serverUrl),
       syncKey: String(parsed.syncKey || appState.config.syncKey || "").trim()
     };
   } catch (error) {
@@ -173,8 +179,13 @@ function createDefaultState() {
   return {
     tasks: [],
     completionLog: {},
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    projects: []
   };
+}
+
+function toFiniteNumber(value, fallback) {
+  return Number.isFinite(value) ? value : fallback;
 }
 
 function normalizeQuadrantId(value) {
@@ -218,12 +229,52 @@ function normalizeTasks(tasks) {
   return normalized;
 }
 
+function normalizeProjectTask(ptask, index) {
+  const parsed = ptask && typeof ptask === "object" ? ptask : {};
+  const progress = Number.isFinite(Number(parsed.progress))
+    ? Math.max(0, Math.min(100, Number(parsed.progress)))
+    : 0;
+  return {
+    id: typeof parsed.id === "string" && parsed.id ? parsed.id : createProjectTaskId(),
+    projectId: typeof parsed.projectId === "string" && parsed.projectId ? parsed.projectId : "",
+    taskName: String(parsed.taskName || "").trim(),
+    startDate: typeof parsed.startDate === "string" && parsed.startDate ? parsed.startDate : "",
+    endDate: typeof parsed.endDate === "string" && parsed.endDate ? parsed.endDate : "",
+    progress,
+    priority: normalizeQuadrantId(parsed.priority),
+    createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
+    order: toFiniteNumber(Number(parsed.order), index)
+  };
+}
+
+function normalizeProjectTasks(ptasks) {
+  return (Array.isArray(ptasks) ? ptasks : [])
+    .map((ptask, index) => normalizeProjectTask(ptask, index))
+    .sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+}
+
+function normalizeProject(project, index) {
+  const parsed = project && typeof project === "object" ? project : {};
+  return {
+    id: typeof parsed.id === "string" && parsed.id ? parsed.id : createProjectId(),
+    name: String(parsed.name || "").trim(),
+    createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
+    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
+    tasks: normalizeProjectTasks(parsed.tasks)
+  };
+}
+
+function normalizeProjects(projects) {
+  return (Array.isArray(projects) ? projects : []).map((project, index) => normalizeProject(project, index));
+}
+
 function normalizeState(value) {
   const parsed = value && typeof value === "object" ? value : {};
   return {
     tasks: normalizeTasks(parsed.tasks),
     completionLog: parsed.completionLog && typeof parsed.completionLog === "object" ? parsed.completionLog : {},
-    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString()
+    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
+    projects: normalizeProjects(parsed.projects)
   };
 }
 
@@ -243,7 +294,7 @@ function loadConfig() {
   try {
     const parsed = readStorageWithBackup(storageKeys.config, storageKeys.configBackup) || {};
     return {
-      serverUrl: String(parsed.serverUrl || "").trim(),
+      serverUrl: normalizeServerUrl(parsed.serverUrl),
       syncKey: String(parsed.syncKey || "").trim()
     };
   } catch (error) {
@@ -258,8 +309,32 @@ function saveConfig() {
   writeStorageWithBackup(storageKeys.config, storageKeys.configBackup, JSON.stringify(appState.config));
 }
 
+function normalizeServerUrl(value) {
+  const rawValue = String(value || "").trim();
+  if (!rawValue) {
+    return "";
+  }
+
+  const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//i.test(rawValue) ? rawValue : `http://${rawValue}`;
+
+  try {
+    const parsedUrl = new URL(withProtocol);
+    if (!parsedUrl.port && parsedUrl.protocol === "http:") {
+      parsedUrl.port = "8787";
+    }
+
+    const normalizedPath = parsedUrl.pathname && parsedUrl.pathname !== "/"
+      ? parsedUrl.pathname.replace(/\/+$/, "")
+      : "";
+
+    return `${parsedUrl.origin}${normalizedPath}`;
+  } catch (error) {
+    return withProtocol.replace(/\/+$/, "");
+  }
+}
+
 function getServerUrl() {
-  return appState.config.serverUrl || window.location.origin;
+  return normalizeServerUrl(appState.config.serverUrl) || window.location.origin;
 }
 
 function isAndroidBridgeActive() {
@@ -489,6 +564,14 @@ function createTaskId() {
   return `task-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
+function createProjectId() {
+  return `proj-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+function createProjectTaskId() {
+  return `ptask-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
 function touchState() {
   appState.data = normalizeState({
     ...appState.data,
@@ -500,6 +583,9 @@ function touchState() {
 function stateHasContent(state) {
   const normalized = normalizeState(state);
   if (normalized.tasks.length > 0) {
+    return true;
+  }
+  if (normalized.projects.length > 0) {
     return true;
   }
 
@@ -746,8 +832,93 @@ function renderSyncFields() {
   refs.syncStatusText.textContent = appState.syncMessage;
 }
 
+function renderTabBar() {
+  const isProjects = appState.tab === "projects";
+  refs.tabTodo.classList.toggle("active", !isProjects);
+  refs.tabProjects.classList.toggle("active", isProjects);
+}
+
+function renderViewVisibility() {
+  const isProjects = appState.tab === "projects";
+  refs.todoView.style.display = isProjects ? "none" : "";
+  refs.projectsView.style.display = isProjects ? "" : "none";
+}
+
+const MOBILE_PRIORITY_LABELS = { q1: "急重", q2: "重要", q3: "紧急", q4: "待定" };
+
+function createProjectTaskRow(ptask) {
+  return `
+    <div class="schedule-row" data-ptask-id="${escapeHtml(ptask.id)}">
+      <div class="schedule-cell name">${escapeHtml(ptask.taskName)}</div>
+      <div class="schedule-cell">${escapeHtml(ptask.startDate || "-")}</div>
+      <div class="schedule-cell">${escapeHtml(ptask.endDate || "-")}</div>
+      <div class="schedule-cell">
+        <div class="progress-bar"><div class="progress-bar-fill" style="width:${ptask.progress}%"></div></div>
+        <span style="font-size:10px;color:var(--ink)">${ptask.progress}%</span>
+      </div>
+      <div class="schedule-cell"><span class="priority-tag ${escapeHtml(ptask.priority)}">${MOBILE_PRIORITY_LABELS[ptask.priority] || ptask.priority}</span></div>
+      <div class="schedule-cell schedule-cell-actions">
+        <button data-action="edit-ptask" data-ptask-id="${escapeHtml(ptask.id)}" type="button">编辑</button>
+        <button data-action="delete-ptask" data-ptask-id="${escapeHtml(ptask.id)}" type="button">删除</button>
+      </div>
+    </div>`;
+}
+
+function createAddProjectTaskForm(projectId) {
+  return `
+    <form class="add-ptask-form" data-form="add-ptask" data-project-id="${escapeHtml(projectId)}">
+      <input type="text" maxlength="80" placeholder="任务名称" required />
+      <input type="date" />
+      <input type="date" />
+      <select>
+        <option value="q1">急重</option>
+        <option value="q2">重要</option>
+        <option value="q3">紧急</option>
+        <option value="q4" selected>待定</option>
+      </select>
+      <button type="submit">添加任务</button>
+    </form>`;
+}
+
+function createProjectCard(project) {
+  const rows = project.tasks.map(createProjectTaskRow).join("");
+  return `
+    <div class="project-card" data-project-id="${escapeHtml(project.id)}">
+      <div class="project-card-header">
+        <span class="project-card-name">${escapeHtml(project.name)}</span>
+        <div class="project-card-actions">
+          <button data-action="edit-project" data-project-id="${escapeHtml(project.id)}" type="button">改名</button>
+          <button class="project-btn-delete" data-action="delete-project" data-project-id="${escapeHtml(project.id)}" type="button">删除项目</button>
+        </div>
+      </div>
+      <div class="schedule-table">
+        <div class="schedule-table-header">
+          <span>任务名称</span><span>开始日期</span><span>结束日期</span><span>进度</span><span>优先级</span><span>操作</span>
+        </div>
+        ${rows || '<div class="project-empty">暂无任务，在下方添加</div>'}
+      </div>
+      ${createAddProjectTaskForm(project.id)}
+    </div>`;
+}
+
+function renderProjectList() {
+  const projects = appState.data.projects || [];
+  if (!projects.length) {
+    refs.projectList.innerHTML = '<div class="project-empty">暂无项目，点击右上角"新建项目"开始</div>';
+    return;
+  }
+  refs.projectList.innerHTML = projects.map(createProjectCard).join("");
+}
+
 function render() {
   renderSyncFields();
+  renderTabBar();
+  renderViewVisibility();
+  if (appState.tab === "projects") {
+    renderProjectList();
+    notifyNativeStateChanged();
+    return;
+  }
   renderTasks();
   renderCalendar();
   renderSelectedDateLog();
@@ -813,6 +984,7 @@ async function runSync(reason = "manual") {
   setSyncMessage("正在同步");
 
   try {
+    const localProjects = appState.data.projects || [];
     const response = await fetch(`${serverUrl}/api/sync`, {
       method: "GET",
       headers: {
@@ -836,6 +1008,9 @@ async function runSync(reason = "manual") {
       }
       const payload = await pushResponse.json();
       appState.data = normalizeState(payload.state);
+      if (localProjects.length > 0 && (appState.data.projects || []).length === 0) {
+        appState.data.projects = localProjects;
+      }
       saveState();
       setSyncMessage("首次同步完成，已上传到云端");
       render();
@@ -855,6 +1030,9 @@ async function runSync(reason = "manual") {
 
     if (remoteHasContent && !localHasContent) {
       appState.data = remoteState;
+      if (localProjects.length > 0 && (appState.data.projects || []).length === 0) {
+        appState.data.projects = localProjects;
+      }
       saveState();
       setSyncMessage("检测到本地为空，已恢复云端数据");
     } else if (localHasContent && !remoteHasContent) {
@@ -872,10 +1050,16 @@ async function runSync(reason = "manual") {
       }
       const payload = await pushResponse.json();
       appState.data = normalizeState(payload.state);
+      if (localProjects.length > 0 && (appState.data.projects || []).length === 0) {
+        appState.data.projects = localProjects;
+      }
       saveState();
       setSyncMessage("云端为空，已用本地数据恢复");
     } else if (remoteTime > localTime) {
       appState.data = remoteState;
+      if (localProjects.length > 0 && (appState.data.projects || []).length === 0) {
+        appState.data.projects = localProjects;
+      }
       saveState();
       setSyncMessage("已拉取云端最新数据");
     } else if (localTime > remoteTime) {
@@ -893,6 +1077,9 @@ async function runSync(reason = "manual") {
       }
       const payload = await pushResponse.json();
       appState.data = normalizeState(payload.state);
+      if (localProjects.length > 0 && (appState.data.projects || []).length === 0) {
+        appState.data.projects = localProjects;
+      }
       saveState();
       setSyncMessage("本地改动已上传");
     } else {
@@ -1009,6 +1196,90 @@ function deleteTask(taskId) {
   touchState();
   render();
   runSync("task-delete");
+}
+
+function addProject(name) {
+  const project = {
+    id: createProjectId(),
+    name,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tasks: []
+  };
+  appState.data.projects.push(project);
+  touchState();
+  render();
+  runSync("project-add");
+}
+
+function updateProjectName(projectId, nextName) {
+  const project = appState.data.projects.find((p) => p.id === projectId);
+  if (project && nextName) {
+    project.name = nextName;
+    project.updatedAt = new Date().toISOString();
+  }
+  touchState();
+  render();
+  runSync("project-update-name");
+}
+
+function deleteProject(projectId) {
+  appState.data.projects = appState.data.projects.filter((p) => p.id !== projectId);
+  touchState();
+  render();
+  runSync("project-delete");
+}
+
+function addProjectTask(projectId, taskData) {
+  const project = appState.data.projects.find((p) => p.id === projectId);
+  if (!project) return;
+  const maxOrder = project.tasks.reduce((max, t) => Math.max(max, t.order || 0), -1);
+  const ptask = {
+    id: createProjectTaskId(),
+    projectId,
+    taskName: taskData.taskName || "",
+    startDate: taskData.startDate || "",
+    endDate: taskData.endDate || "",
+    progress: 0,
+    priority: normalizeQuadrantId(taskData.priority),
+    createdAt: new Date().toISOString(),
+    order: maxOrder + 1
+  };
+  project.tasks.push(ptask);
+  project.updatedAt = new Date().toISOString();
+  touchState();
+  render();
+  runSync("project-task-add");
+}
+
+function updateProjectTask(projectId, taskId, fields) {
+  const project = appState.data.projects.find((p) => p.id === projectId);
+  if (!project) return;
+  const ptask = project.tasks.find((t) => t.id === taskId);
+  if (!ptask) return;
+  if (fields.taskName !== undefined) ptask.taskName = fields.taskName;
+  if (fields.startDate !== undefined) ptask.startDate = fields.startDate;
+  if (fields.endDate !== undefined) ptask.endDate = fields.endDate;
+  if (fields.progress !== undefined) {
+    const num = Number(fields.progress);
+    ptask.progress = Number.isFinite(num) ? Math.max(0, Math.min(100, num)) : 0;
+  }
+  if (fields.priority !== undefined) ptask.priority = normalizeQuadrantId(fields.priority);
+  project.updatedAt = new Date().toISOString();
+  touchState();
+  render();
+  runSync("project-task-update");
+}
+
+function deleteProjectTask(projectId, taskId) {
+  const project = appState.data.projects.find((p) => p.id === projectId);
+  if (project) {
+    project.tasks = project.tasks.filter((t) => t.id !== taskId);
+    project.updatedAt = new Date().toISOString();
+  }
+  touchState();
+  render();
+  runSync("project-task-delete");
 }
 
 function createDragPlaceholder(height) {
@@ -1138,7 +1409,7 @@ function finalizeTaskDrag() {
 }
 
 refs.saveConfigButton.addEventListener("click", async () => {
-  appState.config.serverUrl = refs.serverUrlInput.value.trim();
+  appState.config.serverUrl = normalizeServerUrl(refs.serverUrlInput.value);
   appState.config.syncKey = refs.syncKeyInput.value.trim();
   saveConfig();
   notifyNativeConfigChanged();
@@ -1279,6 +1550,91 @@ refs.prevMonthButton.addEventListener("click", () => {
 refs.nextMonthButton.addEventListener("click", () => {
   appState.currentMonth = new Date(appState.currentMonth.getFullYear(), appState.currentMonth.getMonth() + 1, 1);
   renderCalendar();
+});
+
+refs.tabTodo.addEventListener("click", () => { appState.tab = "todo"; render(); });
+refs.tabProjects.addEventListener("click", () => { appState.tab = "projects"; render(); });
+
+refs.addProjectButton.addEventListener("click", async () => {
+  const name = await requestTaskTitle("", "输入项目名称");
+  if (!name) return;
+  addProject(name);
+});
+
+refs.projectList.addEventListener("click", async (event) => {
+  const actionBtn = event.target.closest("[data-action]");
+  if (!actionBtn) return;
+  const action = actionBtn.dataset.action;
+  const projectId = actionBtn.dataset.projectId || actionBtn.closest("[data-project-id]")?.dataset.projectId;
+  const ptaskId = actionBtn.dataset.ptaskId || actionBtn.closest("[data-ptask-id]")?.dataset.ptaskId;
+
+  if (action === "edit-project") {
+    const project = appState.data.projects.find((p) => p.id === projectId);
+    if (!project) return;
+    const name = await requestTaskTitle(project.name, "修改项目名称");
+    if (!name || name === project.name) return;
+    updateProjectName(projectId, name);
+  } else if (action === "delete-project") {
+    deleteProject(projectId);
+  } else if (action === "edit-ptask") {
+    const project = appState.data.projects.find((p) => p.id === projectId);
+    if (!project) return;
+    const ptask = project.tasks.find((t) => t.id === ptaskId);
+    if (!ptask) return;
+    const modal = document.createElement("div");
+    modal.className = "date-modal-backdrop";
+    modal.innerHTML = `
+      <div class="date-modal" style="width:min(380px, calc(100vw - 24px))">
+        <p class="date-modal-title">编辑项目任务</p>
+        <label style="display:block;margin-bottom:8px">任务名称 <input id="moEditPtaskName" type="text" value="${escapeHtml(ptask.taskName)}" class="date-modal-input" style="width:100%" /></label>
+        <label style="display:block;margin-bottom:8px">开始日期 <input id="moEditPtaskStart" type="date" value="${escapeHtml(ptask.startDate)}" class="date-modal-input" style="width:100%" /></label>
+        <label style="display:block;margin-bottom:8px">结束日期 <input id="moEditPtaskEnd" type="date" value="${escapeHtml(ptask.endDate)}" class="date-modal-input" style="width:100%" /></label>
+        <label style="display:block;margin-bottom:8px">进度 (0-100) <input id="moEditPtaskProgress" type="number" min="0" max="100" value="${ptask.progress}" class="date-modal-input" style="width:100%" /></label>
+        <label style="display:block;margin-bottom:8px">优先级
+          <select id="moEditPtaskPriority" class="date-modal-input" style="width:100%">
+            <option value="q1" ${ptask.priority === "q1" ? "selected" : ""}>急重</option>
+            <option value="q2" ${ptask.priority === "q2" ? "selected" : ""}>重要</option>
+            <option value="q3" ${ptask.priority === "q3" ? "selected" : ""}>紧急</option>
+            <option value="q4" ${ptask.priority === "q4" ? "selected" : ""}>待定</option>
+          </select>
+        </label>
+        <div class="date-modal-actions">
+          <button id="moPtaskEditCancel" class="date-modal-button neutral" type="button">取消</button>
+          <button id="moPtaskEditSave" class="date-modal-button primary" type="button">保存</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector("#moPtaskEditCancel").addEventListener("click", () => modal.remove());
+    modal.querySelector("#moPtaskEditSave").addEventListener("click", () => {
+      const fields = {
+        taskName: modal.querySelector("#moEditPtaskName").value.trim(),
+        startDate: modal.querySelector("#moEditPtaskStart").value,
+        endDate: modal.querySelector("#moEditPtaskEnd").value,
+        progress: Number(modal.querySelector("#moEditPtaskProgress").value),
+        priority: modal.querySelector("#moEditPtaskPriority").value
+      };
+      modal.remove();
+      updateProjectTask(projectId, ptaskId, fields);
+    });
+  } else if (action === "delete-ptask") {
+    deleteProjectTask(projectId, ptaskId);
+  }
+});
+
+refs.projectList.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-form='add-ptask']");
+  if (!form) return;
+  event.preventDefault();
+  const projectId = form.dataset.projectId;
+  const inputs = form.querySelectorAll("input, select");
+  const taskData = {
+    taskName: inputs[0].value.trim(),
+    startDate: inputs[1].value,
+    endDate: inputs[2].value,
+    priority: inputs[3].value
+  };
+  if (!taskData.taskName) return;
+  addProjectTask(projectId, taskData);
 });
 
 if ("serviceWorker" in navigator && !getNativeTodoBridge()) {

@@ -28,10 +28,12 @@ const QUADRANTS = [
 const DEFAULT_QUADRANT_ID = "q1";
 
 const state = {
+  tab: "todo",
   data: {
     tasks: [],
     completionLog: {},
-    updatedAt: null
+    updatedAt: null,
+    projects: []
   },
   syncConfig: {
     serverUrl: "",
@@ -76,7 +78,13 @@ const refs = {
   syncKeyInput: document.getElementById("syncKeyInput"),
   saveSyncButton: document.getElementById("saveSyncButton"),
   syncNowButton: document.getElementById("syncNowButton"),
-  syncStatusText: document.getElementById("syncStatusText")
+  syncStatusText: document.getElementById("syncStatusText"),
+  tabTodo: document.getElementById("tabTodo"),
+  tabProjects: document.getElementById("tabProjects"),
+  todoView: document.getElementById("todoView"),
+  projectsView: document.getElementById("projectsView"),
+  projectList: document.getElementById("projectList"),
+  addProjectButton: document.getElementById("addProjectButton")
 };
 
 function formatDateKey(date) {
@@ -493,8 +501,105 @@ function renderSelectedDateLog() {
     : '<div class="empty-state">这一天还没有完成记录。</div>';
 }
 
+function renderTabBar() {
+  const isProjects = state.tab === "projects";
+  refs.tabTodo.classList.toggle("active", !isProjects);
+  refs.tabProjects.classList.toggle("active", isProjects);
+}
+
+function renderViewVisibility() {
+  const isProjects = state.tab === "projects";
+  refs.todoView.style.display = isProjects ? "none" : "";
+  refs.projectsView.style.display = isProjects ? "" : "none";
+}
+
+const PRIORITY_LABELS = {
+  q1: "急重",
+  q2: "重要",
+  q3: "紧急",
+  q4: "待定"
+};
+
+function createProjectTaskRow(ptask) {
+  return `
+    <div class="schedule-row" data-ptask-id="${escapeHtml(ptask.id)}">
+      <div class="schedule-cell name">${escapeHtml(ptask.taskName)}</div>
+      <div class="schedule-cell">${escapeHtml(ptask.startDate || "-")}</div>
+      <div class="schedule-cell">${escapeHtml(ptask.endDate || "-")}</div>
+      <div class="schedule-cell">
+        <div class="progress-bar">
+          <div class="progress-bar-fill" style="width:${ptask.progress}%"></div>
+        </div>
+        <span style="font-size:10px;color:rgba(45,36,29,0.5)">${ptask.progress}%</span>
+      </div>
+      <div class="schedule-cell"><span class="priority-tag ${escapeHtml(ptask.priority)}">${PRIORITY_LABELS[ptask.priority] || ptask.priority}</span></div>
+      <div class="schedule-cell schedule-cell-actions">
+        <button data-action="edit-ptask" data-ptask-id="${escapeHtml(ptask.id)}" type="button">编辑</button>
+        <button data-action="delete-ptask" data-ptask-id="${escapeHtml(ptask.id)}" type="button">删除</button>
+      </div>
+    </div>`;
+}
+
+function createAddProjectTaskForm(projectId) {
+  return `
+    <form class="add-ptask-form" data-form="add-ptask" data-project-id="${escapeHtml(projectId)}">
+      <input type="text" maxlength="80" placeholder="任务名称" required />
+      <input type="date" />
+      <input type="date" />
+      <select>
+        <option value="q1">急重</option>
+        <option value="q2">重要</option>
+        <option value="q3">紧急</option>
+        <option value="q4" selected>待定</option>
+      </select>
+      <button type="submit">添加任务</button>
+    </form>`;
+}
+
+function createProjectCard(project) {
+  const rows = project.tasks.map(createProjectTaskRow).join("");
+  return `
+    <div class="project-card" data-project-id="${escapeHtml(project.id)}">
+      <div class="project-card-header">
+        <span class="project-card-name">${escapeHtml(project.name)}</span>
+        <div class="project-card-actions">
+          <button class="project-btn-edit" data-action="edit-project" data-project-id="${escapeHtml(project.id)}" type="button">改名</button>
+          <button class="project-btn-delete" data-action="delete-project" data-project-id="${escapeHtml(project.id)}" type="button">删除项目</button>
+        </div>
+      </div>
+      <div class="schedule-table">
+        <div class="schedule-table-header">
+          <span>任务名称</span>
+          <span>开始日期</span>
+          <span>结束日期</span>
+          <span>进度</span>
+          <span>优先级</span>
+          <span>操作</span>
+        </div>
+        ${rows || '<div class="project-empty" style="padding:16px">暂无任务，在下方添加</div>'}
+      </div>
+      ${createAddProjectTaskForm(project.id)}
+    </div>`;
+}
+
+function renderProjectList() {
+  const projects = state.data.projects || [];
+  if (!projects.length) {
+    refs.projectList.innerHTML = '<div class="project-empty">暂无项目，点击右上角"新建项目"开始</div>';
+    return;
+  }
+  refs.projectList.innerHTML = projects.map(createProjectCard).join("");
+}
+
 function render() {
   refs.todayLabel.textContent = formatChineseDate(new Date());
+  renderTabBar();
+  renderViewVisibility();
+  if (state.tab === "projects") {
+    renderProjectList();
+    renderSyncStatus();
+    return;
+  }
   renderTasks();
   renderSyncStatus();
   renderCalendar();
@@ -860,6 +965,111 @@ window.todoApi.onStickyStatus((payload) => {
 
 window.todoApi.onSyncStatus((payload) => {
   setSyncStatus(payload);
+});
+
+refs.tabTodo.addEventListener("click", () => {
+  state.tab = "todo";
+  render();
+});
+
+refs.tabProjects.addEventListener("click", () => {
+  state.tab = "projects";
+  render();
+});
+
+refs.addProjectButton.addEventListener("click", async () => {
+  const name = await requestTaskTitle("", "输入项目名称");
+  if (!name) return;
+  try {
+    const nextState = await window.todoApi.addProject(name);
+    setState(nextState);
+  } catch (error) {
+    console.error("添加项目失败:", error);
+  }
+});
+
+refs.projectList.addEventListener("click", async (event) => {
+  const actionBtn = event.target.closest("[data-action]");
+  if (!actionBtn) return;
+
+  const action = actionBtn.dataset.action;
+  const projectId = actionBtn.dataset.projectId || actionBtn.closest("[data-project-id]")?.dataset.projectId;
+  const ptaskId = actionBtn.dataset.ptaskId || actionBtn.closest("[data-ptask-id]")?.dataset.ptaskId;
+  let nextState;
+
+  if (action === "edit-project") {
+    const project = state.data.projects.find((p) => p.id === projectId);
+    if (!project) return;
+    const name = await requestTaskTitle(project.name, "修改项目名称");
+    if (!name || name === project.name) return;
+    nextState = await window.todoApi.updateProjectName(projectId, name);
+  } else if (action === "delete-project") {
+    nextState = await window.todoApi.deleteProject(projectId);
+  } else if (action === "edit-ptask") {
+    const project = state.data.projects.find((p) => p.id === projectId);
+    if (!project) return;
+    const ptask = project.tasks.find((t) => t.id === ptaskId);
+    if (!ptask) return;
+
+    const modal = document.createElement("div");
+    modal.className = "date-modal-backdrop";
+    modal.innerHTML = `
+      <div class="date-modal" style="width:420px">
+        <p class="date-modal-title">编辑项目任务</p>
+        <label style="display:block;margin-bottom:8px">任务名称 <input id="editPtaskName" type="text" value="${escapeHtml(ptask.taskName)}" style="width:100%;border:none;background:#fffdf9;border-radius:10px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:8px">开始日期 <input id="editPtaskStart" type="date" value="${escapeHtml(ptask.startDate)}" style="width:100%;border:none;background:#fffdf9;border-radius:10px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:8px">结束日期 <input id="editPtaskEnd" type="date" value="${escapeHtml(ptask.endDate)}" style="width:100%;border:none;background:#fffdf9;border-radius:10px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:8px">进度 (0-100) <input id="editPtaskProgress" type="number" min="0" max="100" value="${ptask.progress}" style="width:100%;border:none;background:#fffdf9;border-radius:10px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:8px">优先级
+          <select id="editPtaskPriority" style="width:100%;border:none;background:#fffdf9;border-radius:10px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)">
+            <option value="q1" ${ptask.priority === "q1" ? "selected" : ""}>急重</option>
+            <option value="q2" ${ptask.priority === "q2" ? "selected" : ""}>重要</option>
+            <option value="q3" ${ptask.priority === "q3" ? "selected" : ""}>紧急</option>
+            <option value="q4" ${ptask.priority === "q4" ? "selected" : ""}>待定</option>
+          </select>
+        </label>
+        <div class="date-modal-actions">
+          <button id="ptaskEditCancel" class="date-modal-button neutral" type="button">取消</button>
+          <button id="ptaskEditSave" class="date-modal-button primary" type="button">保存</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector("#ptaskEditCancel").addEventListener("click", () => modal.remove());
+    modal.querySelector("#ptaskEditSave").addEventListener("click", async () => {
+      const fields = {
+        taskName: modal.querySelector("#editPtaskName").value.trim(),
+        startDate: modal.querySelector("#editPtaskStart").value,
+        endDate: modal.querySelector("#editPtaskEnd").value,
+        progress: Number(modal.querySelector("#editPtaskProgress").value),
+        priority: modal.querySelector("#editPtaskPriority").value
+      };
+      modal.remove();
+      const result = await window.todoApi.updateProjectTask(projectId, ptaskId, fields);
+      setState(result);
+    });
+    return;
+  } else if (action === "delete-ptask") {
+    nextState = await window.todoApi.deleteProjectTask(projectId, ptaskId);
+  }
+
+  if (nextState) setState(nextState);
+});
+
+refs.projectList.addEventListener("submit", async (event) => {
+  const form = event.target.closest("[data-form='add-ptask']");
+  if (!form) return;
+  event.preventDefault();
+  const projectId = form.dataset.projectId;
+  const inputs = form.querySelectorAll("input, select");
+  const taskData = {
+    taskName: inputs[0].value.trim(),
+    startDate: inputs[1].value,
+    endDate: inputs[2].value,
+    priority: inputs[3].value
+  };
+  if (!taskData.taskName) return;
+  const nextState = await window.todoApi.addProjectTask(projectId, taskData);
+  setState(nextState);
 });
 
 initialize();

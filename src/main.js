@@ -94,7 +94,8 @@ function createDefaultState() {
   return {
     tasks: [],
     completionLog: {},
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    projects: []
   };
 }
 
@@ -143,12 +144,52 @@ function normalizeTasks(tasks) {
   return normalized;
 }
 
+function normalizeProjectTask(ptask, index) {
+  const parsed = ptask && typeof ptask === "object" ? ptask : {};
+  const progress = Number.isFinite(Number(parsed.progress))
+    ? Math.max(0, Math.min(100, Number(parsed.progress)))
+    : 0;
+  return {
+    id: typeof parsed.id === "string" && parsed.id ? parsed.id : createProjectTaskId(),
+    projectId: typeof parsed.projectId === "string" && parsed.projectId ? parsed.projectId : "",
+    taskName: String(parsed.taskName || "").trim(),
+    startDate: typeof parsed.startDate === "string" && parsed.startDate ? parsed.startDate : "",
+    endDate: typeof parsed.endDate === "string" && parsed.endDate ? parsed.endDate : "",
+    progress,
+    priority: normalizeQuadrantId(parsed.priority),
+    createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
+    order: toFiniteNumber(Number(parsed.order), index)
+  };
+}
+
+function normalizeProjectTasks(ptasks) {
+  return (Array.isArray(ptasks) ? ptasks : [])
+    .map((ptask, index) => normalizeProjectTask(ptask, index))
+    .sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+}
+
+function normalizeProject(project, index) {
+  const parsed = project && typeof project === "object" ? project : {};
+  return {
+    id: typeof parsed.id === "string" && parsed.id ? parsed.id : createProjectId(),
+    name: String(parsed.name || "").trim(),
+    createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
+    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
+    tasks: normalizeProjectTasks(parsed.tasks)
+  };
+}
+
+function normalizeProjects(projects) {
+  return (Array.isArray(projects) ? projects : []).map((project, index) => normalizeProject(project, index));
+}
+
 function normalizeState(value) {
   const parsed = value && typeof value === "object" ? value : {};
   return {
     tasks: normalizeTasks(parsed.tasks),
     completionLog: parsed.completionLog && typeof parsed.completionLog === "object" ? parsed.completionLog : {},
-    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString()
+    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
+    projects: normalizeProjects(parsed.projects)
   };
 }
 
@@ -380,11 +421,23 @@ function stateHasContent(state) {
     return true;
   }
 
+  if (normalized.projects.length > 0) {
+    return true;
+  }
+
   return Object.values(normalized.completionLog).some((items) => Array.isArray(items) && items.length > 0);
 }
 
 function createTaskId() {
   return `task-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+function createProjectId() {
+  return `proj-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+function createProjectTaskId() {
+  return `ptask-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
 function sendStateToWindows(state) {
@@ -572,8 +625,6 @@ async function runSync(reason = "manual") {
 
     if (!remoteState) {
       nextState = await pushRemoteState(config, localState);
-      writeState(nextState);
-      sendStateToWindows(nextState);
       message = "首次同步完成，已上传到云端";
     } else {
       const localHasContent = stateHasContent(localState);
@@ -583,26 +634,26 @@ async function runSync(reason = "manual") {
 
       if (remoteHasContent && !localHasContent) {
         nextState = remoteState;
-        writeState(nextState);
-        sendStateToWindows(nextState);
         message = "检测到本地为空，已恢复云端数据";
       } else if (localHasContent && !remoteHasContent) {
         nextState = await pushRemoteState(config, localState);
-        writeState(nextState);
-        sendStateToWindows(nextState);
         message = "云端为空，已用本地数据恢复";
       } else if (remoteTime > localTime) {
         nextState = remoteState;
-        writeState(nextState);
-        sendStateToWindows(nextState);
         message = "已拉取云端最新数据";
       } else if (localTime > remoteTime) {
         nextState = await pushRemoteState(config, localState);
-        writeState(nextState);
-        sendStateToWindows(nextState);
         message = "本地改动已上传";
       }
     }
+
+    // Preserve local projects if server-side normalization dropped them
+    if ((localState.projects || []).length > 0 && (nextState.projects || []).length === 0) {
+      nextState = { ...nextState, projects: localState.projects, updatedAt: new Date().toISOString() };
+    }
+
+    writeState(nextState);
+    sendStateToWindows(nextState);
 
     const nextConfig = {
       ...config,
@@ -824,6 +875,102 @@ app.whenReady().then(() => {
     removeTaskFromCompletionLog(state, taskId);
 
     return saveStateAndBroadcast(state, "task-delete");
+  });
+
+  ipcMain.handle("project:add", (_, name) => {
+    const state = readState();
+    const trimmed = String(name || "").trim();
+    const project = {
+      id: createProjectId(),
+      name: trimmed,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      tasks: []
+    };
+    state.projects.push(project);
+    return saveStateAndBroadcast(state, "project-add");
+  });
+
+  ipcMain.handle("project:updateName", (_, projectId, nextName) => {
+    const state = readState();
+    const trimmed = String(nextName || "").trim();
+    const project = state.projects.find((p) => p.id === projectId);
+    if (project && trimmed) {
+      project.name = trimmed;
+      project.updatedAt = new Date().toISOString();
+    }
+    return saveStateAndBroadcast(state, "project-update-name");
+  });
+
+  ipcMain.handle("project:delete", (_, projectId) => {
+    const state = readState();
+    state.projects = state.projects.filter((p) => p.id !== projectId);
+    return saveStateAndBroadcast(state, "project-delete");
+  });
+
+  ipcMain.handle("projectTask:add", (_, projectId, taskData) => {
+    const state = readState();
+    const project = state.projects.find((p) => p.id === projectId);
+    if (!project) {
+      return state;
+    }
+    const data = taskData && typeof taskData === "object" ? taskData : {};
+    const maxOrder = project.tasks.reduce((max, t) => Math.max(max, t.order || 0), -1);
+    const ptask = {
+      id: createProjectTaskId(),
+      projectId,
+      taskName: String(data.taskName || "").trim(),
+      startDate: String(data.startDate || ""),
+      endDate: String(data.endDate || ""),
+      progress: 0,
+      priority: normalizeQuadrantId(data.priority),
+      createdAt: new Date().toISOString(),
+      order: maxOrder + 1
+    };
+    project.tasks.push(ptask);
+    project.updatedAt = new Date().toISOString();
+    return saveStateAndBroadcast(state, "project-task-add");
+  });
+
+  ipcMain.handle("projectTask:update", (_, projectId, taskId, partialFields) => {
+    const state = readState();
+    const project = state.projects.find((p) => p.id === projectId);
+    if (!project) {
+      return state;
+    }
+    const ptask = project.tasks.find((t) => t.id === taskId);
+    if (!ptask) {
+      return state;
+    }
+    const fields = partialFields && typeof partialFields === "object" ? partialFields : {};
+    if (fields.taskName !== undefined) {
+      ptask.taskName = String(fields.taskName || "").trim();
+    }
+    if (fields.startDate !== undefined) {
+      ptask.startDate = String(fields.startDate || "");
+    }
+    if (fields.endDate !== undefined) {
+      ptask.endDate = String(fields.endDate || "");
+    }
+    if (fields.progress !== undefined) {
+      const num = Number(fields.progress);
+      ptask.progress = Number.isFinite(num) ? Math.max(0, Math.min(100, num)) : 0;
+    }
+    if (fields.priority !== undefined) {
+      ptask.priority = normalizeQuadrantId(fields.priority);
+    }
+    project.updatedAt = new Date().toISOString();
+    return saveStateAndBroadcast(state, "project-task-update");
+  });
+
+  ipcMain.handle("projectTask:delete", (_, projectId, taskId) => {
+    const state = readState();
+    const project = state.projects.find((p) => p.id === projectId);
+    if (project) {
+      project.tasks = project.tasks.filter((t) => t.id !== taskId);
+      project.updatedAt = new Date().toISOString();
+    }
+    return saveStateAndBroadcast(state, "project-task-delete");
   });
 
   createWindow();

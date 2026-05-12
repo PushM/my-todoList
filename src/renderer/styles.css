@@ -605,8 +605,264 @@ h3 {
   color: #fffaf3;
 }
 
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0;
+  grid-column: 1 / -1;
+}
+
+.tab-button {
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: all 0.2s;
+}
+
+.tab-button.active {
+  background: var(--accent);
+  color: #fffaf3;
+  box-shadow: none;
+}
+
+.tab-button:not(.active):hover {
+  background: rgba(255, 250, 241, 0.7);
+}
+
+#todoView {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 20px;
+  grid-column: 1 / -1;
+}
+
+#projectsView,
+.projects-panel {
+  padding: 24px;
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project-card {
+  background: #fffaf3;
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.project-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.project-card-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  flex: 1;
+}
+
+.project-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.project-card-actions button {
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px var(--line);
+  background: #fffaf3;
+  color: var(--ink);
+}
+
+.project-card-actions .project-btn-edit:hover {
+  background: #e1dff5;
+  color: #4c3f88;
+}
+
+.project-card-actions .project-btn-delete:hover {
+  background: #f7d7d0;
+  color: #8c3a32;
+}
+
+.schedule-table {
+  width: 100%;
+}
+
+.schedule-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 0.6fr 0.6fr 0.5fr;
+  gap: 8px;
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(45, 36, 29, 0.6);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 0.6fr 0.6fr 0.5fr;
+  gap: 8px;
+  padding: 8px 4px;
+  align-items: center;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(72, 48, 35, 0.06);
+}
+
+.schedule-row:last-child {
+  border-bottom: none;
+}
+
+.schedule-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-cell.name {
+  font-weight: 500;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.priority-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.priority-tag.q1 {
+  background: #fff4eb;
+  color: #b85c2b;
+}
+
+.priority-tag.q2 {
+  background: #f2f5ea;
+  color: #5b7336;
+}
+
+.priority-tag.q3 {
+  background: #fff6f2;
+  color: #9b4f3a;
+}
+
+.priority-tag.q4 {
+  background: #f3f0e8;
+  color: #6b6252;
+}
+
+.schedule-cell-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.schedule-cell-actions button {
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  background: transparent;
+  color: rgba(45, 36, 29, 0.5);
+}
+
+.schedule-cell-actions button:hover {
+  background: rgba(72, 48, 35, 0.08);
+  color: var(--ink);
+}
+
+.add-ptask-form {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 0.6fr 0.8fr;
+  gap: 8px;
+  padding: 10px 4px;
+  margin-top: 4px;
+  align-items: end;
+}
+
+.add-ptask-form input,
+.add-ptask-form select {
+  border: none;
+  background: #fffdf9;
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 12px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+}
+
+.add-ptask-form button {
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fffaf3;
+}
+
+.add-ptask-form button:hover {
+  opacity: 0.85;
+}
+
+.project-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(45, 36, 29, 0.4);
+  font-size: 14px;
+}
+
 @media (max-width: 1180px) {
+  .schedule-table-header,
+  .schedule-row {
+    grid-template-columns: 2fr 1fr 1fr 0.6fr 0.6fr 0.5fr;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .add-ptask-form {
+    grid-template-columns: 2fr 1fr 1fr 0.6fr 0.8fr;
+    gap: 4px;
+  }
   .app-shell {
+    grid-template-columns: 1fr;
+  }
+  #todoView {
     grid-template-columns: 1fr;
   }
 }

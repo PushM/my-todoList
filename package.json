@@ -1,14 +1,40 @@
 {
   "name": "sticky-todo-calendar",
-  "version": "1.0.0",
-  "description": "Windows desktop todo list with calendar completion records",
+  "version": "1.1.0",
+  "description": "Cross-platform todo list with Eisenhower Matrix and calendar sync",
+  "author": "PushM",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "start:server": "node server/server.js"
+    "start:server": "node server/server.js",
+    "dist": "electron-builder",
+    "dist:dir": "electron-builder --dir"
   },
-  "dependencies": {
-    "electron": "^36.0.0"
+  "build": {
+    "appId": "com.pushm.todolist",
+    "productName": "My TodoList",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "${productName}-${version}-win-x64.${ext}"
+    }
   },
-  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
+  "dependencies": {},
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
+  "devDependencies": {
+    "electron": "^36.0.0",
+    "electron-builder": "^26.8.1"
+  }
 }

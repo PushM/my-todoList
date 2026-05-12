@@ -8,6 +8,12 @@
   </head>
   <body>
     <main class="app-shell">
+      <nav class="tab-bar">
+        <button id="tabTodo" class="tab-button active" type="button" data-tab="todo">待办</button>
+        <button id="tabProjects" class="tab-button" type="button" data-tab="projects">项目管理</button>
+      </nav>
+
+      <div id="todoView">
       <section class="hero-card">
         <div class="hero-copy">
           <p class="eyebrow">Desktop Browser</p>
@@ -128,6 +134,18 @@
           </section>
         </section>
       </div>
+      </div>
+
+      <section id="projectsView" class="panel projects-panel" style="display:none;">
+        <div class="section-head">
+          <div>
+            <h1>项目管理</h1>
+            <p class="section-copy">管理长期项目，为每个项目创建任务排期表。</p>
+          </div>
+          <button id="addProjectButton" class="pill-button" type="button">新建项目</button>
+        </div>
+        <div id="projectList" class="project-list"></div>
+      </section>
     </main>
 
     <script src="/app.js"></script>

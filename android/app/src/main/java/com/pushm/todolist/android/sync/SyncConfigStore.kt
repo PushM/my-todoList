@@ -8,7 +8,7 @@ class SyncConfigStore(context: Context) {
 
   fun loadConfig(): SyncConfig {
     return SyncConfig(
-      serverUrl = prefs.getString(KEY_SERVER_URL, "")?.trim().orEmpty(),
+      serverUrl = normalizeServerUrl(prefs.getString(KEY_SERVER_URL, "")),
       syncKey = prefs.getString(KEY_SYNC_KEY, "")?.trim().orEmpty(),
       selectedCalendarId = prefs.takeIf { it.contains(KEY_SELECTED_CALENDAR_ID) }?.getLong(KEY_SELECTED_CALENDAR_ID, -1L)
         ?.takeIf { it >= 0L }
@@ -17,7 +17,7 @@ class SyncConfigStore(context: Context) {
 
   fun saveConfig(serverUrl: String, syncKey: String) {
     prefs.edit()
-      .putString(KEY_SERVER_URL, serverUrl.trim())
+      .putString(KEY_SERVER_URL, normalizeServerUrl(serverUrl))
       .putString(KEY_SYNC_KEY, syncKey.trim())
       .apply()
   }
@@ -72,6 +72,42 @@ class SyncConfigStore(context: Context) {
 
   fun saveLastSyncMessage(message: String) {
     prefs.edit().putString(KEY_LAST_SYNC_MESSAGE, message).apply()
+  }
+
+  private fun normalizeServerUrl(value: String?): String {
+    val rawValue = value?.trim().orEmpty()
+    if (rawValue.isBlank()) {
+      return ""
+    }
+
+    val withProtocol = if (rawValue.contains("://")) rawValue else "http://$rawValue"
+    return runCatching {
+      val parsedUri = java.net.URI(withProtocol)
+      val scheme = parsedUri.scheme ?: "http"
+      val host = parsedUri.host ?: return@runCatching withProtocol.trimEnd('/')
+      val port = when {
+        parsedUri.port >= 0 -> parsedUri.port
+        scheme.equals("http", ignoreCase = true) -> 8787
+        else -> -1
+      }
+      val path = parsedUri.rawPath
+        ?.trimEnd('/')
+        ?.takeIf { it.isNotEmpty() && it != "/" }
+        .orEmpty()
+
+      buildString {
+        append(scheme)
+        append("://")
+        append(host)
+        if (port >= 0) {
+          append(":")
+          append(port)
+        }
+        append(path)
+      }
+    }.getOrElse {
+      withProtocol.trimEnd('/')
+    }
   }
 
   companion object {

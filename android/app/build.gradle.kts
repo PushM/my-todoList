@@ -1,7 +1,38 @@
+import java.util.Properties
+
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
 }
+
+val releaseSigningDir = rootProject.file("signing")
+val releaseSigningPropsFile = releaseSigningDir.resolve("release.properties")
+val releaseSigningProps = Properties().apply {
+  if (releaseSigningPropsFile.exists()) {
+    releaseSigningPropsFile.inputStream().use { load(it) }
+  }
+}
+
+fun readSigningValue(propertyKey: String, envKey: String): String? {
+  val propertyValue = releaseSigningProps.getProperty(propertyKey)?.trim().orEmpty()
+  if (propertyValue.isNotEmpty()) {
+    return propertyValue
+  }
+
+  val envValue = System.getenv(envKey)?.trim().orEmpty()
+  return envValue.ifEmpty { null }
+}
+
+val releaseStoreFilePath = readSigningValue("storeFile", "TODO_ANDROID_STORE_FILE")
+val releaseStorePassword = readSigningValue("storePassword", "TODO_ANDROID_STORE_PASSWORD")
+val releaseKeyAlias = readSigningValue("keyAlias", "TODO_ANDROID_KEY_ALIAS")
+val releaseKeyPassword = readSigningValue("keyPassword", "TODO_ANDROID_KEY_PASSWORD")
+val hasReleaseSigning = listOf(
+  releaseStoreFilePath,
+  releaseStorePassword,
+  releaseKeyAlias,
+  releaseKeyPassword
+).all { !it.isNullOrBlank() }
 
 android {
   namespace = "com.pushm.todolist.android"
@@ -11,15 +42,29 @@ android {
     applicationId = "com.pushm.todolist.android"
     minSdk = 26
     targetSdk = 35
-    versionCode = 1
-    versionName = "1.0.0"
+    versionCode = 2
+    versionName = "1.1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  signingConfigs {
+    if (hasReleaseSigning) {
+      create("release") {
+        storeFile = file(releaseStoreFilePath!!)
+        storePassword = releaseStorePassword
+        keyAlias = releaseKeyAlias
+        keyPassword = releaseKeyPassword
+      }
+    }
   }
 
   buildTypes {
     release {
       isMinifyEnabled = false
+      if (hasReleaseSigning) {
+        signingConfig = signingConfigs.getByName("release")
+      }
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"

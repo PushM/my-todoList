@@ -565,6 +565,205 @@ input {
   color: #fff8f3;
 }
 
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tab-button {
+  flex: 1;
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.tab-button.active {
+  background: var(--accent);
+  color: #fff8f3;
+  box-shadow: 0 10px 20px rgba(184, 107, 63, 0.22);
+}
+
+/* Projects */
+.projects-panel {
+  padding: 16px;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.project-card {
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  padding: 14px;
+  overflow: hidden;
+}
+
+.project-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.project-card-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.project-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.project-card-actions button {
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-size: 11px;
+  background: #efe6da;
+  color: #46362a;
+}
+
+.project-card-actions .project-btn-delete {
+  background: #f7d7d0;
+  color: #8c3a32;
+}
+
+.project-empty {
+  text-align: center;
+  padding: 24px;
+  color: rgba(47, 38, 30, 0.5);
+  font-size: 13px;
+}
+
+.schedule-table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.schedule-table-header,
+.schedule-row {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr 0.8fr 1fr;
+  gap: 4px;
+  min-width: 480px;
+  font-size: 11px;
+}
+
+.schedule-table-header {
+  padding: 8px 4px;
+  color: rgba(47, 38, 30, 0.55);
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+}
+
+.schedule-row {
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(72, 48, 35, 0.06);
+  align-items: center;
+}
+
+.schedule-cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-cell-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.schedule-cell-actions button {
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 7px;
+  font-size: 10px;
+  background: #efe6da;
+  color: #46362a;
+}
+
+.schedule-cell-actions button:last-child {
+  background: #f7d7d0;
+  color: #8c3a32;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(72, 48, 35, 0.1);
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  min-width: 0;
+}
+
+.priority-tag {
+  display: inline-block;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.priority-tag.q1 { background: #ffe0d4; color: #9b3c2a; }
+.priority-tag.q2 { background: #dcefdc; color: #245d2f; }
+.priority-tag.q3 { background: #fff1c6; color: #7a5d14; }
+.priority-tag.q4 { background: #e6e6e6; color: #555; }
+
+.add-ptask-form {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 0.8fr auto;
+  gap: 6px;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.add-ptask-form input,
+.add-ptask-form select {
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  padding: 8px 6px;
+  background: #fffdf9;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 11px;
+  min-width: 0;
+}
+
+.add-ptask-form button {
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--accent);
+  color: #fff8f3;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 @media (max-width: 420px) {
   .hero-card {
     flex-direction: column;

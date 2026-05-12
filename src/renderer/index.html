@@ -8,6 +8,12 @@
   </head>
   <body>
     <div class="app-shell">
+      <nav class="tab-bar">
+        <button id="tabTodo" class="tab-button active" type="button" data-tab="todo">待办</button>
+        <button id="tabProjects" class="tab-button" type="button" data-tab="projects">项目管理</button>
+      </nav>
+
+      <div id="todoView">
       <section class="panel board-panel">
         <div class="panel-header">
           <div>
@@ -100,6 +106,18 @@
           </form>
           <div id="selectedDateLog" class="log-list"></div>
         </div>
+      </section>
+      </div>
+
+      <section id="projectsView" class="panel projects-panel" style="display:none;">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Project Management</p>
+            <h1>项目管理</h1>
+          </div>
+          <button id="addProjectButton" class="mode-toggle" type="button">新建项目</button>
+        </div>
+        <div id="projectList" class="project-list"></div>
       </section>
     </div>
 

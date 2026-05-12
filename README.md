@@ -101,6 +101,17 @@ server/data/sync-store.json
 server/data/backups/
 ```
 
+## 桌面端打包
+
+```powershell
+cd D:\project\my-todoList
+npm run dist
+```
+
+构建产物在 `dist/` 目录下：
+
+- `My TodoList-1.1.0-win-x64.zip` — 解压即用的便携版
+
 ## Android 安装
 
 Android 客户端说明见：

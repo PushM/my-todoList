@@ -187,12 +187,52 @@ function normalizeTasks(tasks) {
   return normalized;
 }
 
+function normalizeProjectTask(ptask, index) {
+  const parsed = ptask && typeof ptask === "object" ? ptask : {};
+  const progress = Number.isFinite(Number(parsed.progress))
+    ? Math.max(0, Math.min(100, Number(parsed.progress)))
+    : 0;
+  return {
+    id: typeof parsed.id === "string" && parsed.id ? parsed.id : `ptask-${Date.now()}-${index}`,
+    projectId: typeof parsed.projectId === "string" && parsed.projectId ? parsed.projectId : "",
+    taskName: String(parsed.taskName || "").trim(),
+    startDate: typeof parsed.startDate === "string" && parsed.startDate ? parsed.startDate : "",
+    endDate: typeof parsed.endDate === "string" && parsed.endDate ? parsed.endDate : "",
+    progress,
+    priority: normalizeQuadrantId(parsed.priority),
+    createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
+    order: Number.isFinite(Number(parsed.order)) ? Number(parsed.order) : index
+  };
+}
+
+function normalizeProjectTasks(ptasks) {
+  return (Array.isArray(ptasks) ? ptasks : [])
+    .map((ptask, index) => normalizeProjectTask(ptask, index))
+    .sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+}
+
+function normalizeProject(project, index) {
+  const parsed = project && typeof project === "object" ? project : {};
+  return {
+    id: typeof parsed.id === "string" && parsed.id ? parsed.id : `proj-${Date.now()}-${index}`,
+    name: String(parsed.name || "").trim(),
+    createdAt: typeof parsed.createdAt === "string" ? parsed.createdAt : new Date().toISOString(),
+    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
+    tasks: normalizeProjectTasks(parsed.tasks)
+  };
+}
+
+function normalizeProjects(projects) {
+  return (Array.isArray(projects) ? projects : []).map((project, index) => normalizeProject(project, index));
+}
+
 function normalizeState(value) {
   const parsed = value && typeof value === "object" ? value : {};
   return {
     tasks: normalizeTasks(parsed.tasks),
     completionLog: parsed.completionLog && typeof parsed.completionLog === "object" ? parsed.completionLog : {},
-    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString()
+    updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
+    projects: normalizeProjects(parsed.projects)
   };
 }
 

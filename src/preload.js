@@ -12,6 +12,13 @@ contextBridge.exposeInMainWorld("todoApi", {
     ipcRenderer.invoke("task:updateCompletedDate", taskId, completionDateKey),
   addCompletedTask: (payload) => ipcRenderer.invoke("task:addCompleted", payload),
   deleteTask: (taskId) => ipcRenderer.invoke("task:delete", taskId),
+  addProject: (name) => ipcRenderer.invoke("project:add", name),
+  updateProjectName: (projectId, name) => ipcRenderer.invoke("project:updateName", projectId, name),
+  deleteProject: (projectId) => ipcRenderer.invoke("project:delete", projectId),
+  addProjectTask: (projectId, taskData) => ipcRenderer.invoke("projectTask:add", projectId, taskData),
+  updateProjectTask: (projectId, taskId, fields) =>
+    ipcRenderer.invoke("projectTask:update", projectId, taskId, fields),
+  deleteProjectTask: (projectId, taskId) => ipcRenderer.invoke("projectTask:delete", projectId, taskId),
   getSyncConfig: () => ipcRenderer.invoke("sync:config:get"),
   saveSyncConfig: (payload) => ipcRenderer.invoke("sync:config:save", payload),
   runSync: (reason) => ipcRenderer.invoke("sync:run", reason),
