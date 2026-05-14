@@ -117,7 +117,8 @@ const refs = {
   todoView: document.getElementById("todoView"),
   projectsView: document.getElementById("projectsView"),
   projectList: document.getElementById("projectList"),
-  addProjectButton: document.getElementById("addProjectButton")
+  addProjectButton: document.getElementById("addProjectButton"),
+  widthToggle: document.getElementById("widthToggle")
 };
 
 function createDefaultState() {
@@ -743,7 +744,7 @@ function createProjectTaskRow(ptask) {
       <div class="schedule-cell">${escapeHtml(ptask.endDate || "-")}</div>
       <div class="schedule-cell">
         <div class="progress-bar"><div class="progress-bar-fill" style="width:${ptask.progress}%"></div></div>
-        <span style="font-size:10px;color:var(--muted)">${ptask.progress}%</span>
+        <span style="font-size:11px;color:var(--muted)">${ptask.progress}%</span>
       </div>
       <div class="schedule-cell"><span class="priority-tag ${escapeHtml(ptask.priority)}">${WEB_PRIORITY_LABELS[ptask.priority] || ptask.priority}</span></div>
       <div class="schedule-cell schedule-cell-actions">
@@ -1666,6 +1667,21 @@ refs.addProjectButton.addEventListener("click", async () => {
   if (!name) return;
   addProject(name);
 });
+
+if (refs.widthToggle) {
+  const WIDTH_KEY = "todo-web-full-width";
+  refs.widthToggle.textContent = localStorage.getItem(WIDTH_KEY) === "true" ? "窄屏模式" : "宽屏模式";
+  if (localStorage.getItem(WIDTH_KEY) === "true") {
+    document.querySelector(".app-shell")?.classList.add("full-width");
+  }
+  refs.widthToggle.addEventListener("click", () => {
+    const shell = document.querySelector(".app-shell");
+    if (!shell) return;
+    const isFull = shell.classList.toggle("full-width");
+    localStorage.setItem(WIDTH_KEY, String(isFull));
+    refs.widthToggle.textContent = isFull ? "窄屏模式" : "宽屏模式";
+  });
+}
 
 refs.projectList.addEventListener("click", async (event) => {
   const actionBtn = event.target.closest("[data-action]");

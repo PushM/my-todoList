@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "name": "The Sharp Page",
+  "version": 2,
+  "name": "Notion Calm",
   "created": "2026-05-13",
   "register": "product",
 
@@ -8,54 +8,64 @@
     "strategy": "restrained",
     "accent": {
       "name": "Slate Blue",
-      "hex": "#5b7f95",
+      "hex": "#5B7F95",
       "oklch": "oklch(0.58 0.065 240)",
       "ramp": {
         "50": "#f4f7f9",
-        "100": "#e4ecf1",
+        "100": "#E4ECF1",
         "200": "#c4d4de",
         "300": "#9bb8c7",
         "400": "#7ba0b2",
-        "500": "#5b7f95",
+        "500": "#5B7F95",
         "600": "#4a6b7e",
-        "700": "#3d5d6e",
+        "700": "#3D5D6E",
         "800": "#314c5b",
         "900": "#253b47"
       }
     },
     "neutral": {
-      "page": { "hex": "#f7f5f2", "description": "Root background, cool off-white" },
-      "panel": { "hex": "#fdfdfc", "description": "Card and panel surfaces, brighter than page" },
-      "line": { "hex": "#e5e2df", "description": "1px borders and dividers" },
-      "ink": { "hex": "#1c1c1c", "description": "Primary text, near-black" },
-      "muted": { "hex": "#8c8c8c", "description": "Secondary text, placeholders" }
+      "page": { "hex": "#FFFEFC", "description": "Warm white root background, Notion's signature canvas" },
+      "panel": { "hex": "#FFFFFF", "description": "Card and panel surfaces" },
+      "line": { "hex": "#E9E9E7", "description": "1px borders and dividers" },
+      "ink": { "hex": "#37352F", "description": "Primary text, warm dark gray" },
+      "muted": { "hex": "#9B9A97", "description": "Secondary text, placeholders" }
+    },
+    "highlightPalette": {
+      "description": "Notion's 6-color pastel bg + saturated text pair system",
+      "red": { "bg": "#F9E8E5", "text": "#CE5242", "use": "Urgent-important, danger, P0" },
+      "orange": { "bg": "#F9ECDF", "text": "#D9730D", "use": "Urgent quadrant" },
+      "yellow": { "bg": "#FAF3DC", "text": "#C29209", "use": "Warning, P1 priority" },
+      "green": { "bg": "#EDF3EC", "text": "#448361", "use": "Completion, success" },
+      "blue": { "bg": "#E7F3F8", "text": "#337EA9", "use": "Important quadrant, info" },
+      "gray": { "bg": "#F1F1EF", "text": "#787774", "use": "Backlog, P2, neutral tags" }
     },
     "semantic": {
-      "success": { "hex": "#7a9e7e", "description": "Completion, done states" },
-      "warning": { "hex": "#c9a96e", "description": "Due dates, approaching deadlines" },
-      "danger": { "hex": "#c47e6e", "description": "Delete, overdue" }
-    }
+      "success": { "bg": "var(--hl-green-bg)", "text": "var(--hl-green-text)" },
+      "warning": { "bg": "var(--hl-yellow-bg)", "text": "var(--hl-yellow-text)" },
+      "danger": { "bg": "var(--hl-red-bg)", "text": "var(--hl-red-text)" }
+    },
+    "hoverTint": "rgba(55,53,47,0.06)"
   },
 
   "typographyMeta": {
-    "stack": "'PingFang SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif",
+    "stack": "'Inter', 'PingFang SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif",
     "roles": {
-      "display": { "weight": 300, "size": "34px", "lineHeight": 1.1, "letterSpacing": "-0.03em", "use": "Page titles, once per view" },
-      "headline": { "weight": 700, "size": "24px", "lineHeight": 1.2, "letterSpacing": "-0.02em", "use": "Section headers, month labels" },
-      "title": { "weight": 600, "size": "18px", "lineHeight": 1.3, "letterSpacing": "-0.01em", "use": "Card titles, project names" },
-      "body": { "weight": 400, "size": "14px", "lineHeight": 1.6, "letterSpacing": "normal", "use": "All running text, task titles" },
-      "label": { "weight": 500, "size": "11px", "lineHeight": 1.4, "letterSpacing": "0.02em", "use": "Quadrant labels, priority tags" }
+      "display": { "weight": 700, "size": "40px", "lineHeight": 1.2, "letterSpacing": "-0.02em", "use": "Page titles, once per view" },
+      "headline": { "weight": 600, "size": "24px", "lineHeight": 1.3, "letterSpacing": "-0.01em", "use": "Section headers, month labels" },
+      "title": { "weight": 600, "size": "20px", "lineHeight": 1.3, "letterSpacing": "-0.01em", "use": "Card titles, project names" },
+      "body": { "weight": 400, "size": "16px", "lineHeight": 1.5, "letterSpacing": "normal", "use": "All running text, task titles" },
+      "label": { "weight": 500, "size": "12px", "lineHeight": 1.4, "letterSpacing": "0.02em", "use": "Quadrant labels, priority tags" }
     },
-    "maxLineLength": "65ch"
+    "maxLineLength": "75ch"
   },
 
   "shadows": {
     "ambient": {
-      "value": "0 8px 24px rgba(0, 0, 0, 0.08)",
-      "use": "Card hover, dropdown menus, drag previews"
+      "value": "0 2px 10px rgba(0, 0, 0, 0.06)",
+      "use": "Sticky windows, drag previews"
     },
     "modal": {
-      "value": "0 20px 48px rgba(0, 0, 0, 0.14)",
+      "value": "0 8px 24px rgba(0, 0, 0, 0.12)",
       "use": "Dialog backdrops and modal surfaces only"
     },
     "insetLine": {
@@ -65,18 +75,18 @@
   },
 
   "rounded": {
-    "sm": "8px",
-    "md": "12px",
-    "lg": "16px",
+    "sm": "6px",
+    "md": "8px",
+    "lg": "10px",
     "full": "999px"
   },
 
   "spacing": {
     "xs": "6px",
-    "sm": "12px",
-    "md": "20px",
-    "lg": "32px",
-    "xl": "48px"
+    "sm": "14px",
+    "md": "24px",
+    "lg": "36px",
+    "xl": "56px"
   },
 
   "motion": {
@@ -86,96 +96,139 @@
   },
 
   "breakpoints": {
-    "desktopWide": "1180px",
-    "desktop": "980px",
+    "desktopFullWidth": "1200px",
+    "desktopDefault": "708px",
     "tablet": "820px",
     "mobile": "560px"
   },
 
   "components": {
     "buttonPrimary": {
-      "css": "background: var(--accent); color: #fff; border-radius: 8px; padding: 8px 20px; font-size: 11px; font-weight: 500; letter-spacing: 0.02em; border: none; cursor: pointer; transition: background 150ms ease-out;",
+      "css": "background: var(--accent); color: #fff; border-radius: var(--radius-sm); padding: 8px 22px; font-size: 12px; font-weight: 500; letter-spacing: 0.02em; border: none; cursor: pointer; transition: background 150ms ease-out;",
       "hover": "background: var(--accent-deep);",
       "html": "<button class=\"btn-primary\">Label</button>"
     },
     "buttonSecondary": {
-      "css": "background: transparent; color: var(--ink); border-radius: 8px; padding: 8px 20px; font-size: 14px; box-shadow: inset 0 0 0 1px var(--line); border: none; cursor: pointer;",
+      "css": "background: transparent; color: var(--ink); border-radius: var(--radius-sm); padding: 8px 22px; font-size: 14px; box-shadow: inset 0 0 0 1px var(--line); border: none; cursor: pointer;",
+      "hover": "background: rgba(55,53,47,0.06);",
       "html": "<button class=\"btn-secondary\">Label</button>"
     },
+    "buttonTaskAction": {
+      "css": "border-radius: var(--radius-sm); padding: 6px 10px; font-size: 12px; font-weight: 500; border: none; cursor: pointer;",
+      "complete": "background: var(--success); color: var(--success-text);",
+      "undo": "background: var(--warning); color: var(--warning-text);",
+      "delete": "background: var(--danger); color: var(--danger-text);",
+      "edit": "background: var(--accent-soft); color: var(--accent-deep);",
+      "html": "<button class=\"task-action complete\">Done</button>"
+    },
     "card": {
-      "css": "background: var(--panel); border-radius: 12px; padding: 24px; box-shadow: none;",
-      "hover": "box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);",
+      "css": "background: var(--panel); border-radius: var(--radius-md); padding: 28px; box-shadow: inset 0 0 0 1px var(--line);",
+      "hover": "background: var(--page);",
       "html": "<div class=\"card\">...</div>"
     },
     "input": {
-      "css": "background: var(--page); color: var(--ink); border-radius: 8px; padding: 10px 14px; font-size: 14px; box-shadow: inset 0 0 0 1px var(--line); border: none; outline: none;",
+      "css": "background: var(--page); color: var(--ink); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 16px; box-shadow: inset 0 0 0 1px var(--line); border: none; outline: none;",
       "focus": "box-shadow: inset 0 0 0 1px var(--accent);",
       "html": "<input class=\"input\" placeholder=\"Placeholder\" />"
     },
     "tabs": {
-      "css": "display: flex; gap: 8px;",
-      "tabButton": "border-radius: 999px; padding: 10px 24px; font-size: 14px; font-weight: 600; background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); border: none; cursor: pointer; transition: all 180ms ease-out;",
+      "css": "display: flex; gap: 10px;",
+      "tabButton": "border-radius: var(--radius-full); padding: 10px 26px; font-size: 14px; font-weight: 600; background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); border: none; cursor: pointer; transition: all 180ms ease-out;",
+      "tabButtonHover": "background: rgba(55,53,47,0.06);",
       "tabButtonActive": "background: var(--accent); color: #fff; box-shadow: none;",
       "html": "<button class=\"tab active\">Tab</button>"
     },
     "chip": {
-      "css": "border-radius: 999px; padding: 6px 12px; font-size: 12px;",
+      "css": "border-radius: var(--radius-full); padding: 3px 10px; font-size: 12px; font-weight: 500;",
       "html": "<span class=\"chip\">Tag</span>"
     },
+    "priorityTag": {
+      "css": "display: inline-block; border-radius: var(--radius-sm); padding: 3px 10px; font-size: 12px; font-weight: 500;",
+      "p0": "background: var(--hl-red-bg); color: var(--hl-red-text);",
+      "p1": "background: var(--hl-yellow-bg); color: var(--hl-yellow-text);",
+      "p2": "background: var(--hl-gray-bg); color: var(--hl-gray-text);",
+      "html": "<span class=\"priority-tag p0\">P0</span>"
+    },
     "progressBar": {
-      "css": "height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; cursor: ew-resize; user-select: none;",
-      "fill": "height: 100%; background: var(--accent); border-radius: 3px; pointer-events: none;",
+      "css": "height: 8px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; cursor: ew-resize; user-select: none;",
+      "fill": "height: 100%; background: var(--accent); border-radius: var(--radius-full); pointer-events: none;",
       "html": "<div class=\"progress-bar\"><div class=\"progress-bar-fill\" style=\"width:60%\"></div></div>"
     },
     "dragHandle": {
       "css": "display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 24px; cursor: grab; color: var(--muted); font-size: 14px; user-select: none; border-radius: 4px; opacity: 0.3;",
-      "hover": "opacity: 0.6; background: rgba(0,0,0,0.03);",
-      "html": "<span class=\"drag-handle\">⋮⋮</span>"
+      "hover": "opacity: 0.6; background: rgba(55,53,47,0.06);",
+      "html": "<span class=\"drag-handle\">::</span>"
+    },
+    "quadrantColumn": {
+      "q1": "background: var(--hl-red-bg);",
+      "q2": "background: var(--hl-blue-bg);",
+      "q3": "background: var(--hl-orange-bg);",
+      "q4": "background: var(--hl-gray-bg);"
     }
   },
 
   "namedRules": {
+    "notionHover": "Interactive elements hover toward rgba(55,53,47,0.06) — a warm neutral gray tint. No colored hovers.",
+    "panelTonalShift": "Panel hover states shift background to var(--page). No shadow reveal on hover.",
+    "highlightPair": "Every highlight color comes as a bg+text pair. Never mix bg from one pair with text from another.",
     "oneAccent": "The accent color appears on at most 10% of any screen. A button, a selected tab, a checked box.",
-    "noPureWhite": "Every light surface is tinted toward the brand temperature. Pure #ffffff and #000000 are prohibited.",
-    "ghostBorder": "Borders are 1px solid, in neutral-line. Color emphasis comes from background tints, not side borders.",
+    "ghostBorder": "Borders are 1px solid, in var(--line). Color emphasis comes from background tints, not side borders.",
     "weightOnly": "Hierarchy is created through font weight and size alone. Never through color alone on the same size.",
-    "flatByDefault": "Surfaces are flat at rest. Shadows appear only as a response to state (hover, elevation, focus, drag).",
-    "onePxMaximum": "No border or outline exceeds 1px. Grouping and separation come from space and background tonal shifts."
+    "flatByDefault": "Surfaces are flat at rest. Shadows appear only as a response to state (drag, modal elevation).",
+    "onePxMaximum": "No border or outline exceeds 1px."
   },
 
   "narrative": {
-    "creativeNorthStar": "The Sharp Page",
-    "scene": "A single sheet of premium paper under even light. The interface recedes until only the task remains.",
-    "aesthetic": "Precision without coldness. Flat surfaces, cool off-white background with barely perceptible warmth. One accent color signals action. Typography does the heavy lifting through weight contrast.",
+    "creativeNorthStar": "Notion Calm",
+    "scene": "A warm white document open on a desk in soft morning light. Content breathes. The interface fades until only the tasks remain, each one sitting in a gentle pastel bed that tells you its priority at a glance.",
+    "aesthetic": "Warm minimalism borrowed from Notion. Generous whitespace, six pastel highlight colors, warm gray text, Inter typeface. Surfaces are clean and flat, with hover states that warm rather than flash. The highlight palette makes quadrants and priorities scannable without relying on borders or labels.",
     "keyCharacteristics": [
-      "Flat surfaces with minimal elevation; shadows appear only on hover or drag",
-      "One accent color used on less than 10% of any given screen",
-      "Typographic hierarchy through weight contrast (300 / 400 / 600 / 700)",
-      "No dividers; space alone separates sections",
-      "Cool off-white background tinted just enough to not read as pure white"
+      "Warm white page (#FFFEFC) — the signature Notion canvas",
+      "Six-color highlight system for semantic tagging and quadrants",
+      "Unified warm-gray ink (#37352F) for all primary text",
+      "Neutral gray hover tint (rgba(55,53,47,0.06)) across all interactive elements",
+      "Default 708px content width for focused reading on desktop web",
+      "Inter typeface leading a system font stack",
+      "Generous whitespace — 25-50% more than the previous design",
+      "Pastel bg + saturated text pairs for task action buttons"
     ]
   },
 
   "cssVariables": {
-    "electron": {
-      "comment": "Replace current warm paper tokens with these",
+    "all": {
+      "comment": "Notion Calm design tokens — applied across Electron, desktop web, mobile web, and sticky window",
       "vars": {
-        "--page": "#f7f5f2",
-        "--panel": "#fdfdfc",
-        "--line": "#e5e2df",
-        "--ink": "#1c1c1c",
-        "--muted": "#8c8c8c",
-        "--accent": "#5b7f95",
-        "--accent-deep": "#3d5d6e",
-        "--accent-soft": "#e4ecf1",
-        "--success": "#7a9e7e",
-        "--warning": "#c9a96e",
-        "--danger": "#c47e6e",
-        "--shadow-ambient": "0 8px 24px rgba(0, 0, 0, 0.08)",
-        "--shadow-modal": "0 20px 48px rgba(0, 0, 0, 0.14)",
-        "--radius-sm": "8px",
-        "--radius-md": "12px",
-        "--radius-lg": "16px",
+        "--page": "#FFFEFC",
+        "--panel": "#FFFFFF",
+        "--line": "#E9E9E7",
+        "--ink": "#37352F",
+        "--muted": "#9B9A97",
+        "--accent": "#5B7F95",
+        "--accent-deep": "#3D5D6E",
+        "--accent-soft": "#E4ECF1",
+        "--hl-red-bg": "#F9E8E5",
+        "--hl-red-text": "#CE5242",
+        "--hl-orange-bg": "#F9ECDF",
+        "--hl-orange-text": "#D9730D",
+        "--hl-yellow-bg": "#FAF3DC",
+        "--hl-yellow-text": "#C29209",
+        "--hl-green-bg": "#EDF3EC",
+        "--hl-green-text": "#448361",
+        "--hl-blue-bg": "#E7F3F8",
+        "--hl-blue-text": "#337EA9",
+        "--hl-gray-bg": "#F1F1EF",
+        "--hl-gray-text": "#787774",
+        "--success": "var(--hl-green-bg)",
+        "--success-text": "var(--hl-green-text)",
+        "--warning": "var(--hl-yellow-bg)",
+        "--warning-text": "var(--hl-yellow-text)",
+        "--danger": "var(--hl-red-bg)",
+        "--danger-text": "var(--hl-red-text)",
+        "--shadow-ambient": "0 2px 10px rgba(0,0,0,0.06)",
+        "--shadow-modal": "0 8px 24px rgba(0,0,0,0.12)",
+        "--radius-sm": "6px",
+        "--radius-md": "8px",
+        "--radius-lg": "10px",
         "--radius-full": "999px"
       }
     }

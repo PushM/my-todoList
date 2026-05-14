@@ -1,18 +1,24 @@
 :root {
-  --page: #f7f5f2;
-  --panel: #fdfdfc;
-  --line: #e5e2df;
-  --ink: #1c1c1c;
-  --muted: #8c8c8c;
-  --accent: #5b7f95;
-  --accent-deep: #3d5d6e;
-  --accent-soft: #e4ecf1;
-  --success: #7a9e7e;
-  --danger: #c47e6e;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  font-family: 'PingFang SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif;
+  --page: #FFFEFC;
+  --panel: #FFFFFF;
+  --line: #E9E9E7;
+  --ink: #37352F;
+  --muted: #9B9A97;
+  --accent: #5B7F95;
+  --accent-deep: #3D5D6E;
+  --accent-soft: #E4ECF1;
+  --success: #EDF3EC;
+  --success-text: #448361;
+  --danger: #F9E8E5;
+  --danger-text: #CE5242;
+  --hl-red-bg: #F9E8E5;
+  --hl-blue-bg: #E7F3F8;
+  --hl-orange-bg: #F9ECDF;
+  --hl-gray-bg: #F1F1EF;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -30,16 +36,16 @@ body.dragging-active {
 }
 
 .sticky-shell {
-  padding: 10px;
+  padding: 12px;
 }
 
 .sticky-window {
-  min-height: calc(100vh - 20px);
+  min-height: calc(100vh - 24px);
   border-radius: var(--radius-md);
   background: var(--panel);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--line);
-  padding: 12px;
+  padding: 16px;
 }
 
 .sticky-header,
@@ -57,7 +63,7 @@ body.dragging-active {
 
 .eyebrow {
   margin: 0 0 2px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -71,13 +77,13 @@ strong {
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
 }
 
 .header-buttons {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .header-buttons button,
@@ -90,30 +96,35 @@ h1 {
 }
 
 .header-buttons button {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: transparent;
   color: var(--ink);
   font-size: 15px;
   line-height: 1;
   box-shadow: inset 0 0 0 1px var(--line);
+  transition: background 150ms ease-out;
+}
+
+.header-buttons button:hover {
+  background: rgba(55, 53, 47, 0.06);
 }
 
 .sticky-meta {
-  margin: 10px 0 12px;
-  padding: 8px 10px;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   background: var(--page);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 
 .task-form {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .task-form input {
@@ -124,69 +135,74 @@ h1 {
   padding: 10px 14px;
   background: var(--page);
   box-shadow: inset 0 0 0 1px var(--line);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .task-form button {
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: var(--radius-sm);
   background: var(--accent);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.02em;
+  transition: background 150ms ease-out;
+}
+
+.task-form button:hover {
+  background: var(--accent-deep);
 }
 
 .sticky-tip {
-  margin-bottom: 10px;
-  font-size: 11px;
+  margin-bottom: 12px;
+  font-size: 12px;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .quadrant-board {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .quadrant-column {
   border-radius: var(--radius-md);
-  padding: 10px;
+  padding: 12px;
 }
 
 .quadrant-column.urgent-important {
-  background: #f5e8e4;
+  background: var(--hl-red-bg);
 }
 
 .quadrant-column.important {
-  background: #f1efe4;
+  background: var(--hl-blue-bg);
 }
 
 .quadrant-column.urgent {
-  background: #f2e9e6;
+  background: var(--hl-orange-bg);
 }
 
 .quadrant-column.backlog {
-  background: #eeede9;
+  background: var(--hl-gray-bg);
 }
 
 .quadrant-header strong {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ink);
 }
 
 .quadrant-header span {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 
 .quadrant-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-height: 40px;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .task-card,
@@ -203,39 +219,39 @@ h1 {
 }
 
 .task-title {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ink);
   word-break: break-word;
 }
 
 .task-time,
 .quadrant-empty {
-  margin-top: 3px;
-  font-size: 10px;
+  margin-top: 4px;
+  font-size: 11px;
   color: var(--muted);
 }
 
 .task-actions {
   display: flex;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .task-action,
 .drag-handle {
-  padding: 6px 8px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .task-action.complete {
   background: var(--success);
-  color: #fff;
+  color: var(--success-text);
 }
 
 .task-action.delete {
   background: var(--danger);
-  color: #fff;
+  color: var(--danger-text);
 }
 
 .drag-handle {
@@ -246,7 +262,7 @@ h1 {
 }
 
 .drag-handle:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(55, 53, 47, 0.06);
 }
 
 .pending-card.drag-source {
@@ -258,7 +274,7 @@ h1 {
   z-index: 999;
   pointer-events: none;
   margin: 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .task-placeholder {
@@ -283,17 +299,17 @@ h1 {
 .date-modal {
   width: min(300px, calc(100vw - 24px));
   border-radius: var(--radius-lg);
-  padding: 14px;
+  padding: 18px;
   background: var(--panel);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .date-modal-title {
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--ink);
 }
 
@@ -303,24 +319,25 @@ h1 {
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   background: var(--page);
-  font-size: 13px;
+  font-size: 14px;
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .date-modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
 }
 
 .date-modal-button {
   border: none;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  padding: 8px 20px;
-  font-size: 11px;
+  padding: 8px 22px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.02em;
+  transition: background 150ms ease-out;
 }
 
 .date-modal-button.neutral {
@@ -332,4 +349,8 @@ h1 {
 .date-modal-button.primary {
   background: var(--accent);
   color: #fff;
+}
+
+.date-modal-button.primary:hover {
+  background: var(--accent-deep);
 }

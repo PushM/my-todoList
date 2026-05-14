@@ -877,7 +877,7 @@ function createProjectTaskRow(ptask) {
       <div class="schedule-cell">${escapeHtml(ptask.endDate || "-")}</div>
       <div class="schedule-cell">
         <div class="progress-bar"><div class="progress-bar-fill" style="width:${ptask.progress}%"></div></div>
-        <span style="font-size:10px;color:var(--ink)">${ptask.progress}%</span>
+        <span style="font-size:11px;color:var(--ink)">${ptask.progress}%</span>
       </div>
       <div class="schedule-cell"><span class="priority-tag ${escapeHtml(ptask.priority)}">${MOBILE_PRIORITY_LABELS[ptask.priority] || ptask.priority}</span></div>
       <div class="schedule-cell schedule-cell-actions">

@@ -538,7 +538,7 @@ function createProjectTaskRow(ptask) {
         <div class="progress-bar">
           <div class="progress-bar-fill" style="width:${ptask.progress}%"></div>
         </div>
-        <span style="font-size:10px;color:rgba(45,36,29,0.5)">${ptask.progress}%</span>
+        <span style="font-size:11px;color:rgba(45,36,29,0.5)">${ptask.progress}%</span>
       </div>
       <div class="schedule-cell"><span class="priority-tag ${escapeHtml(ptask.priority)}">${PRIORITY_LABELS[ptask.priority] || ptask.priority}</span></div>
       <div class="schedule-cell schedule-cell-actions">
@@ -1223,12 +1223,12 @@ refs.projectList.addEventListener("click", async (event) => {
     modal.innerHTML = `
       <div class="date-modal" style="width:420px">
         <p class="date-modal-title">编辑项目任务</p>
-        <label style="display:block;margin-bottom:8px">任务名称 <input id="editPtaskName" type="text" value="${escapeHtml(ptask.taskName)}" style="width:100%;border:none;background:var(--page);border-radius:8px;padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
-        <label style="display:block;margin-bottom:8px">开始日期 <input id="editPtaskStart" type="date" value="${escapeHtml(ptask.startDate)}" style="width:100%;border:none;background:var(--page);border-radius:8px;padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
-        <label style="display:block;margin-bottom:8px">结束日期 <input id="editPtaskEnd" type="date" value="${escapeHtml(ptask.endDate)}" style="width:100%;border:none;background:var(--page);border-radius:8px;padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
-        <label style="display:block;margin-bottom:8px">进度 (0-100) <input id="editPtaskProgress" type="number" min="0" max="100" value="${ptask.progress}" style="width:100%;border:none;background:var(--page);border-radius:8px;padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
-        <label style="display:block;margin-bottom:8px">优先级
-          <select id="editPtaskPriority" style="width:100%;border:none;background:var(--page);border-radius:8px;padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)">
+        <label style="display:block;margin-bottom:10px">任务名称 <input id="editPtaskName" type="text" value="${escapeHtml(ptask.taskName)}" style="width:100%;border:none;background:var(--page);border-radius:var(--radius-sm);padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:10px">开始日期 <input id="editPtaskStart" type="date" value="${escapeHtml(ptask.startDate)}" style="width:100%;border:none;background:var(--page);border-radius:var(--radius-sm);padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:10px">结束日期 <input id="editPtaskEnd" type="date" value="${escapeHtml(ptask.endDate)}" style="width:100%;border:none;background:var(--page);border-radius:var(--radius-sm);padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:10px">进度 (0-100) <input id="editPtaskProgress" type="number" min="0" max="100" value="${ptask.progress}" style="width:100%;border:none;background:var(--page);border-radius:var(--radius-sm);padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)" /></label>
+        <label style="display:block;margin-bottom:10px">优先级
+          <select id="editPtaskPriority" style="width:100%;border:none;background:var(--page);border-radius:var(--radius-sm);padding:10px 14px;box-shadow:inset 0 0 0 1px var(--line)">
             <option value="p0" ${ptask.priority === "p0" ? "selected" : ""}>P0</option>
             <option value="p1" ${ptask.priority === "p1" ? "selected" : ""}>P1</option>
             <option value="p2" ${ptask.priority === "p2" ? "selected" : ""}>P2</option>
